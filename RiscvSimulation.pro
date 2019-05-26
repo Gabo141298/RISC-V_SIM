@@ -25,12 +25,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+    cache.cpp \
         main.cpp \
         MainWindow.cpp \
+    pcb.cpp \
     processor.cpp
 
 HEADERS += \
         MainWindow.h \
+    cache.h \
+    pcb.h \
     processor.h
 
 FORMS += \

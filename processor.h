@@ -2,13 +2,33 @@
 #define PROCESSOR_H
 
 #include <vector>
+#include <cache.h>
+#include <pcb.h>
 
 class Processor
 {
+
+    typedef struct
+    {
+        short state;
+        char processor1;
+        char processor2;
+        char processor3;
+    }directoryBlock;
+
 private:
     int pc;
     std::vector<int> registers;
+    std::vector<int> instructionMemory;
+    std::vector<int> dataMemory;
+    std::vector<directoryBlock> directory;
+    // En el futuro va a haber que cambiarlo por las respectivas clases virutales
+    Cache instructionsCache;
+    Cache dataCache;
+    // Esto despues lo cambiamos por la lista enlazada cirucular con nodo centinela :V
+    std::vector<Pcb> pcbQueu;
     int rl;
+
 public:
     Processor();
 

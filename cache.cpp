@@ -1,6 +1,16 @@
 #include "cache.h"
 
-cache::cache()
+Cache::Cache()
+{
+
+}
+
+void Cache::solveFail()
+{
+
+}
+
+Cache::~Cache()
 {
 
 }

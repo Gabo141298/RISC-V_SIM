@@ -5,6 +5,9 @@ Processor::Processor():
     rl {-1}
 {
     registers.resize(32);
+    instructionMemory.resize(64);
+    dataMemory.resize(32);
+    directory.resize(8);
 }
 
 void Processor::beq(unsigned sourceRegister1, unsigned sourceRegister2, int immediate)
