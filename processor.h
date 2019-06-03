@@ -2,8 +2,10 @@
 #define PROCESSOR_H
 
 #include <vector>
-#include <cache.h>
-#include <pcb.h>
+#include "cache.h"
+#include "instructioncache.h"
+#include "datacache.h"
+#include "pcb.h"
 
 class Processor
 {
@@ -11,9 +13,7 @@ class Processor
     typedef struct
     {
         short state;
-        char processor1;
-        char processor2;
-        char processor3;
+        char processor[3];
     }directoryBlock;
 
 private:
@@ -23,14 +23,16 @@ private:
     std::vector<int> dataMemory;
     std::vector<directoryBlock> directory;
     // En el futuro va a haber que cambiarlo por las respectivas clases virutales
-    Cache instructionsCache;
-    Cache dataCache;
-    // Esto despues lo cambiamos por la lista enlazada cirucular con nodo centinela :V
-    std::vector<Pcb> pcbQueu;
+    InstructionCache instructionsCache;
+    DataCache dataCache;
+    // Esto despues lo cambiamos por la lista enlazada circular con nodo centinela :V
+    std::vector<Pcb> pcbQueue;
     int rl;
 
 public:
     Processor();
+
+    friend class Cache;
 
     inline void addi(unsigned destinationRegister, unsigned sourceRegister, int immediate)
     {

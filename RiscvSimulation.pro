@@ -29,13 +29,17 @@ SOURCES += \
         main.cpp \
         MainWindow.cpp \
     pcb.cpp \
-    processor.cpp
+    processor.cpp \
+    instructioncache.cpp \
+    datacache.cpp
 
 HEADERS += \
         MainWindow.h \
     cache.h \
     pcb.h \
-    processor.h
+    processor.h \
+    instructioncache.h \
+    datacache.h
 
 FORMS += \
         mainwindow.ui

@@ -5,11 +5,6 @@ Cache::Cache()
 
 }
 
-void Cache::solveFail()
-{
-
-}
-
 Cache::~Cache()
 {
 
