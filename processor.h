@@ -1,7 +1,10 @@
 #ifndef PROCESSOR_H
 #define PROCESSOR_H
 
+#include <pthread.h>
+#include <queue>
 #include <vector>
+
 #include "cache.h"
 #include "instructioncache.h"
 #include "datacache.h"
@@ -9,20 +12,47 @@
 
 class Processor
 {
+    typedef struct
+    {
+        char opcode;
+        int block;
+    } message;
 
     typedef struct
     {
         short state;
         char processor[3];
-    }directoryBlock;
+    } directoryBlock;
+
+    enum ProcessorStates
+    {
+        instructionCacheCheck,
+        instructionCacheFail,
+        fetch,
+        dataCacheCheck,
+        dataCacheFail,
+        execution,
+        contextSwitch,
+    };
 
 private:
+    int processorId;
+
     int pc;
     std::vector<int> registers;
     std::vector<int> instructionMemory;
     std::vector<int> dataMemory;
+
     std::vector<directoryBlock> directory;
-    // En el futuro va a haber que cambiarlo por las respectivas clases virutales
+    Processor* processors[3];
+
+    std::queue<message> messages;
+    pthread_mutex_t messagesMutex;
+
+    pthread_barrier_t* barrier;
+    size_t clock;
+    ProcessorStates currentState;
+
     InstructionCache instructionsCache;
     DataCache dataCache;
     // Esto despues lo cambiamos por la lista enlazada circular con nodo centinela :V
@@ -33,6 +63,16 @@ public:
     Processor();
 
     friend class Cache;
+
+    void run();
+
+    inline bool isMemoryInstruction(int& instructionCode)
+    {
+        return instructionCode == 5 // lw
+                || instructionCode == 37 // sw
+                || instructionCode == 51 // lr
+                || instructionCode == 52; // sc
+    }
 
     inline void addi(unsigned destinationRegister, unsigned sourceRegister, int immediate)
     {

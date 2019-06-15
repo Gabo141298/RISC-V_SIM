@@ -10,7 +10,7 @@ int DataCache::getDataAt()
     return 0;
 }
 
-void DataCache::solveFail(int blockInMemory)
+void DataCache::solveFail(const int& pc)
 {
-    (void)blockInMemory;
+    (void)pc;
 }

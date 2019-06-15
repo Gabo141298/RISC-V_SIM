@@ -7,20 +7,24 @@ InstructionCache::InstructionCache()
 
 }
 
+bool InstructionCache::isInstructionInCache(const int &pc)
+{
+    int blockInMemory = pc / 16;
+    int blockInCache = blockInMemory % 4;
+    return blockID[blockInCache] == blockInMemory;
+}
+
 void InstructionCache::fetch(const int &pc, int instruction[4])
 {
     int blockInMemory = pc / 16;
     int blockInCache = blockInMemory % 4;
-    if(blockID[blockInCache] != blockInMemory || state[blockInCache] == invalid)
-        solveFail(blockInMemory);
-    memcpy(instruction, cacheMem[blockInCache], 4 * sizeof(char));
+    memcpy(instruction, cacheMem[blockInCache], 4 * sizeof(int));
 }
 
-void InstructionCache::solveFail(int blockInMemory)
+void InstructionCache::solveFail(const int& pc)
 {
+    int blockInMemory = pc / 16;
+    int blockInCache = blockInMemory % 4;
     int victimBlock = blockInMemory % 4;
-    if(state[victimBlock] == modified)
-        //copyToMem();
-        (void)victimBlock;
     //memcpy(cacheMem[victimBlock], );
 }

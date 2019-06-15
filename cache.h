@@ -17,7 +17,7 @@ public:
     states state[4] = {invalid};
 
     // Esto es porque me imagino que esto va a ser distinto
-    virtual void solveFail(int blockInMemory) = 0;
+    virtual void solveFail(const int& pc) = 0;
 
     virtual ~Cache();
 };

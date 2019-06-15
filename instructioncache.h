@@ -7,8 +7,9 @@ class InstructionCache : public Cache
 {
 public:
     InstructionCache();
+    bool isInstructionInCache(const int& pc);
     void fetch(const int& pc, int instruction[4]);
-    void solveFail(int blockInMemory) override;
+    void solveFail(const int& pc) override;
 };
 
 #endif // INSTRUCTIONCACHE_H

@@ -9,7 +9,7 @@ class DataCache : public Cache
 public:
     DataCache();
     int getDataAt();
-    void solveFail(int blockInMemory) override;
+    void solveFail(const int& pc) override;
 };
 
 #endif // DATACACHE_H
