@@ -1,28 +1,51 @@
 #include "simulationmanager.h"
 #include <QDirIterator>
 #include <QDebug>
+#include "processor.h"
+#include <QObject>
 
 SimulationManager::SimulationManager()
 {
 
 }
 
-SimulationManager::SimulationManager(const int quatum, const QString dir):
+SimulationManager::SimulationManager(const int quatum, const QString dir, const size_t numberOfProccesors):
     quatum{quatum} ,
     dir{dir}
 {
     this->hilillos.resize(10);
+    this->processors.resize(numberOfProccesors);
 }
 
 void SimulationManager::beginSimulation()
 {
+    // Sequential read of the files
     readHilillos();
+    // Launch the threads
+    createProcessors();
+    // Distribute program
+    distributeHilillos();
 
-    for (size_t index =0; index < hilillos.size(); ++index)
+}
+
+
+void SimulationManager::createProcessors()
+{
+    for (size_t index = 0; index < this->processors.size(); ++index)
     {
-        if (!hilillos.at(index).empty())
-            qDebug() << hilillos.at(index);
+        // Create processor threads and add to an array
+        Processor *processorThread = this->processors.at(index) = new Processor(index);
+        //connect(processorThread, &Processor::resultReady, this, &MyObject::handleResults);
+        //QObject::connect(processorThread, &Processor::finished, processorThread, &QObject::deleteLater);
     }
+}
+
+void SimulationManager::distributeHilillos()
+{
+   auto iterator =  this->hilillos.begin();
+
+   iterator.operator++();
+
 }
 
 void SimulationManager::readHilillos()
@@ -58,5 +81,7 @@ void SimulationManager::readHilillos()
     }
 
 }
+
+
 
 

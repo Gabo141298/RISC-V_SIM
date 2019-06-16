@@ -38,7 +38,7 @@ void MainWindow::on_runButtonPressed_pressed()
     }
     qDebug() << "Begining simulation";
     // Maybe this can be a new thread...
-    this->simulationManager = SimulationManager(this->quatum, this->dir);
+    this->simulationManager = SimulationManager(this->quatum, this->dir,3);
     simulationManager.beginSimulation();
 
 
