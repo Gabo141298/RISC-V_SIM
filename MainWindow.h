@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "simulationmanager.h"
 
 namespace Ui
 {
@@ -26,6 +27,11 @@ private:
     Ui::MainWindow *ui;
     QString openFile();
     void centerAndResize();
+    SimulationManager simulationManager;
+    QString dir;
+    int quatum;
+    void beginSimulation();
+
 };
 
 #endif // MAINWINDOW_H

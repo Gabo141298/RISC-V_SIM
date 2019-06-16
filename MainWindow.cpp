@@ -11,12 +11,12 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    this->quatum = 10;
     ui->setupUi(this);
     QMainWindow::setWindowTitle(QString("Risc-V Simulator"));
     centerAndResize();
-    //this->ui->runButtonPressed->setEnabled(false);
-    this->ui->numHilillosInput->setValidator(new QIntValidator(0,100,this));
-    this->ui->quantumInput->setValidator(new QIntValidator(0,100,this));
+    this->ui->quantumInput->setText("10");
+    this->ui->quantumInput->setValidator(new QIntValidator(10,100,this));
     qDebug() << QCoreApplication::applicationDirPath() ;
     this->ui->selectedDirLabel->setText(QCoreApplication::applicationDirPath() );
 }
@@ -29,9 +29,23 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_runButtonPressed_pressed()
 {
-    qDebug("Presionado");
-    this->ui->numHilillosInput->setReadOnly(true);
-    this->ui->quantumInput->setReadOnly(true);
+    this->quatum = this->ui->quantumInput->text().toInt();
+    if ( this->quatum < 10 || this->dir.isNull() )
+    {
+        qDebug() << "Invalid data, Quatum must be at least 10, and dir path must contain hilillos";
+        this->ui->quantumInput->setText("10");
+        return;
+    }
+    qDebug() << "Begining simulation";
+    // Maybe this can be a new thread...
+    this->simulationManager = SimulationManager(this->quatum, this->dir);
+    simulationManager.beginSimulation();
+
+
+}
+
+void MainWindow::beginSimulation()
+{
 
 }
 
@@ -42,12 +56,12 @@ QString MainWindow::openFile()
                                                        "/home",
                                                        QFileDialog::ShowDirsOnly
                                                        | QFileDialog::DontResolveSymlinks);
-
   if( !filename.isNull() )
   {
     qDebug() << "selected file path : " << filename.toUtf8();
     return filename;
   }
+
   return nullptr;
 }
 
@@ -55,8 +69,8 @@ void MainWindow::on_selectHilillosButton_pressed()
 {
     QString path;
     if ((path = openFile()) == nullptr )
-        return;
-
+       return;
+    this->dir = path;
     this->ui->selectedDirLabel->setText(path);
 
 }
