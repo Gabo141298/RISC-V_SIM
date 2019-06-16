@@ -3,18 +3,18 @@
 Processor::Processor():
     pc {0},
     clock{0},
-    currentState{fetch},
+    currentState{instructionFetch},
     rl {-1}
 {
     registers.resize(32);
-    instructionMemory.resize(64);
+    instructionMemory.resize(64 * 4); // Cada instrucción está compuesta por cuatro enteros para efectos de la simulación
     dataMemory.resize(32);
     directory.resize(8);
 }
 
 void Processor::run()
 {
-    int instruction[4];
+    int instruction[4] = {0};
     while(1) // Hay que poner que mientras hay al menos uno corriendo
     {
         if(!messages.empty())
@@ -22,27 +22,15 @@ void Processor::run()
 
         switch(currentState)
         {
-            case instructionCacheCheck:
-                if(this->instructionsCache.isInstructionInCache(this->pc))
-                    currentState = fetch;
-                else
-                    currentState = instructionCacheFail;
-                break;
-            case instructionCacheFail:
-                this->instructionsCache.solveFail(this->pc);
-                break;
-
-            case fetch:
-                instructionsCache.fetch(this->pc, instruction);
+            case instructionFetch:
+                instructionsCache.fetch(this, instruction);
                 if(isMemoryInstruction(instruction[0]))
-                    currentState = dataCacheCheck;
+                    currentState = dataFetch;
                 else
                     currentState = execution;
                 break;
-
-            case dataCacheCheck:
-                break;
-            case dataCacheFail:
+            // Al igual que en el fetch de instrucciones, en datos se resuelven los fallos
+            case dataFetch:
                 break;
             case execution:
                 break;
@@ -51,8 +39,14 @@ void Processor::run()
             // No se ocupa default porque Qt se pone en varas, ya que sí estamos poniendo los casos de todo el enum.
         }
 
-        pthread_barrier_wait(this->barrier);
+        advanceClockCycle();
     }
+}
+
+void Processor::advanceClockCycle()
+{
+    ++this->clock;
+    pthread_barrier_wait(this->barrier);
 }
 
 void Processor::beq(unsigned sourceRegister1, unsigned sourceRegister2, int immediate)

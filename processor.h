@@ -26,11 +26,8 @@ class Processor
 
     enum ProcessorStates
     {
-        instructionCacheCheck,
-        instructionCacheFail,
-        fetch,
-        dataCacheCheck,
-        dataCacheFail,
+        instructionFetch,
+        dataFetch,
         execution,
         contextSwitch,
     };
@@ -62,7 +59,8 @@ private:
 public:
     Processor();
 
-    friend class Cache;
+    friend class InstructionCache;
+    friend class DataCache;
 
     void run();
 
@@ -73,6 +71,8 @@ public:
                 || instructionCode == 51 // lr
                 || instructionCode == 52; // sc
     }
+
+    void advanceClockCycle();
 
     inline void addi(unsigned destinationRegister, unsigned sourceRegister, int immediate)
     {
