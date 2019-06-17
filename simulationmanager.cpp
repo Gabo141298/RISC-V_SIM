@@ -42,11 +42,46 @@ void SimulationManager::createProcessors()
 
 void SimulationManager::distributeHilillos()
 {
-   auto iterator =  this->hilillos.begin();
+    // Iterate through the hilillos
+    std::vector<std::vector<int>>::iterator iteratorBegin = this->hilillos.begin();
+    const std::vector<std::vector<int>>::iterator iteratorEnd = this->hilillos.end();
+    
+    std::vector< std::vector<int>* > memoryHilillos(3);
 
-   iterator.operator++();
+    // Gets a pointer to the instruction memory of each processor
+    for (size_t index = 0; index < this->processors.size(); ++index)
+    {
+        memoryHilillos[index] = this->processors[index]->getInstructionMemory();
+    }
 
+    // Counter that stores the current memory location of each processor
+    size_t counter[3] = {0,0,0};
+
+    // Processor currently
+    size_t pos = 0;
+
+    // Iterate though the hilillos
+    for (iteratorBegin; iteratorBegin != iteratorEnd; iteratorBegin++)
+    {
+        for(size_t index = 0; index < iteratorBegin->size(); ++index)
+        {
+            qDebug() << "Asignig to processor" << pos%3 << "at mem pos" << counter[pos%3] << "a" << iteratorBegin->at(index);
+            memoryHilillos[pos%3]->at(counter[pos%3]) = iteratorBegin->at(index);
+            ++counter[pos%3];
+        }
+        ++pos;
+    }
 }
+
+void SimulationManager::processorRun()
+{
+    for (size_t index = 0; index < this->processors.size(); ++index)
+    {
+       this->processors.at(index)->run();
+    }
+}
+
+
 
 void SimulationManager::readHilillos()
 {

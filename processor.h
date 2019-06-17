@@ -97,6 +97,8 @@ public:
         this->registers[destinationRegister] = this->registers[sourceRegister1] / this->registers[sourceRegister2];
     }
 
+    inline std::vector<int>* getInstructionMemory() {return &this->instructionMemory;}
+
     void beq(unsigned sourceRegister1, unsigned sourceRegister2, int immediate);
     void bne(unsigned sourceRegister1, unsigned sourceRegister2, int immediate);
 
