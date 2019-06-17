@@ -3,12 +3,14 @@
 
 #include <pthread.h>
 #include <queue>
+#include <QMutex>
 #include <vector>
 
 #include "cache.h"
 #include "instructioncache.h"
 #include "datacache.h"
 #include "pcb.h"
+#include "directory.h"
 
 class Processor
 {
@@ -20,7 +22,7 @@ class Processor
 
     typedef struct
     {
-        short state;
+        DirectoryStates state;
         char processor[3];
     } directoryBlock;
 
@@ -30,6 +32,13 @@ class Processor
         dataFetch,
         execution,
         contextSwitch,
+    };
+
+    enum MessageTypes
+    {
+        invalidate,
+        leaveAsShared,
+        ack,
     };
 
 private:
@@ -44,7 +53,7 @@ private:
     Processor* processors[3];
 
     std::queue<message> messages;
-    pthread_mutex_t messagesMutex;
+    QMutex messagesMutex;
 
     pthread_barrier_t* barrier;
     size_t clock;
@@ -73,6 +82,10 @@ public:
     }
 
     void advanceClockCycle();
+
+    void sendMessage(MessageTypes messageType);
+
+    void processAcks(const size_t& waitingAcks);
 
     inline void addi(unsigned destinationRegister, unsigned sourceRegister, int immediate)
     {

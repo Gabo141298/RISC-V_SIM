@@ -39,7 +39,8 @@ HEADERS += \
     pcb.h \
     processor.h \
     instructioncache.h \
-    datacache.h
+    datacache.h \
+    directory.h
 
 FORMS += \
         mainwindow.ui
