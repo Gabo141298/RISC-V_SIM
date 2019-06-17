@@ -52,6 +52,19 @@ void Processor::advanceClockCycle()
     pthread_barrier_wait(this->barrier);
 }
 
+void Processor::sendMessage(Processor::MessageTypes messageType)
+{
+    (void)messageType;
+}
+
+void Processor::processAcks(const size_t& waitingAcks)
+{
+    while(waitingAcks > 0)
+    {
+        // Wait for acks.
+    }
+}
+
 void Processor::beq(unsigned sourceRegister1, unsigned sourceRegister2, int immediate)
 {
     if(this->registers[sourceRegister1] == this->registers[sourceRegister2])

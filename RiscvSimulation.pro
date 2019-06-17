@@ -41,8 +41,8 @@ HEADERS += \
     processor.h \
     instructioncache.h \
     datacache.h \
+    directory.h \
     simulationmanager.h
-
 FORMS += \
         mainwindow.ui
 
