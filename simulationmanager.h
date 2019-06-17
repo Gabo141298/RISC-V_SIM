@@ -20,6 +20,7 @@ private:
     void readHilillos();
     void createProcessors();
     void distributeHilillos();
+    void processorRun();
 };
 
 #endif // SIMULATIONMANAGER_H

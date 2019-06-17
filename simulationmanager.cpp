@@ -25,6 +25,8 @@ void SimulationManager::beginSimulation()
     createProcessors();
     // Distribute program
     distributeHilillos();
+    // Start each processors
+    processorRun();
 
 }
 
