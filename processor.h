@@ -5,6 +5,7 @@
 #include <queue>
 #include <QMutex>
 #include <vector>
+#include <QThread>
 
 #include "cache.h"
 #include "instructioncache.h"
@@ -12,8 +13,9 @@
 #include "pcb.h"
 #include "directory.h"
 
-class Processor
+class Processor: public QThread
 {
+    Q_OBJECT
     typedef struct
     {
         char opcode;
@@ -42,7 +44,7 @@ class Processor
     };
 
 private:
-    int processorId;
+    size_t processorId;
 
     int pc;
     std::vector<int> registers;
@@ -66,12 +68,12 @@ private:
     int rl;
 
 public:
-    Processor();
+    Processor(const size_t id);
 
     friend class InstructionCache;
     friend class DataCache;
 
-    void run();
+    void run() override;
 
     inline bool isMemoryInstruction(int& instructionCode)
     {

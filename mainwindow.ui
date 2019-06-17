@@ -57,22 +57,7 @@
          </spacer>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
-          <item>
-           <widget class="QLabel" name="numeroHilillosLabel">
-            <property name="text">
-             <string>Número de hilillos</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="numHilillosInput">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <layout class="QVBoxLayout" name="verticalLayout_3"/>
         </item>
        </layout>
       </item>

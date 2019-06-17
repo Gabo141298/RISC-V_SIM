@@ -1,10 +1,12 @@
 #include "processor.h"
+#include <QDebug>
 
-Processor::Processor():
+Processor::Processor(const size_t id):
     pc {0},
     clock{0},
     currentState{instructionFetch},
-    rl {-1}
+    rl {-1},
+    processorId{id}
 {
     registers.resize(32);
     instructionMemory.resize(64 * 4); // Cada instrucción está compuesta por cuatro enteros para efectos de la simulación
@@ -14,6 +16,7 @@ Processor::Processor():
 
 void Processor::run()
 {
+    qDebug() << this->processorId;
     int instruction[4] = {0};
     while(1) // Hay que poner que mientras hay al menos uno corriendo
     {

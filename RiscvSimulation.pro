@@ -31,7 +31,8 @@ SOURCES += \
     pcb.cpp \
     processor.cpp \
     instructioncache.cpp \
-    datacache.cpp
+    datacache.cpp \
+    simulationmanager.cpp
 
 HEADERS += \
         MainWindow.h \
@@ -40,8 +41,8 @@ HEADERS += \
     processor.h \
     instructioncache.h \
     datacache.h \
-    directory.h
-
+    directory.h \
+    simulationmanager.h
 FORMS += \
         mainwindow.ui
 
