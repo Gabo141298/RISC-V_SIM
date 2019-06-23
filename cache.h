@@ -14,7 +14,7 @@ class Cache
 {   
 public:
     Cache();
-    int blockID[4] = {0};
+    int blockID[4] = {-1,-1,-1,-1};
     states state[4] = {invalid};
 
     // Esto es porque me imagino que esto va a ser distinto

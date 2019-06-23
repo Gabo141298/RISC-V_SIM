@@ -13,11 +13,13 @@ void InstructionCache::fetch(Processor *processor, int instruction[4])
 {
     int blockInMemory = processor->pc / 16;
     int blockInCache = blockInMemory % 4;
+    int wordInBlock = (processor->pc / 4) % 4;
 
     if(!isInstructionInCache(blockInMemory, blockInCache))
         solveFail(processor, blockInMemory, blockInCache);
 
-    memcpy(instruction, cacheMem[blockInCache], sizeof(cacheMem[blockInCache]));
+    memcpy(instruction, cacheMem[blockInCache][wordInBlock], sizeof(cacheMem[blockInCache][wordInBlock]));
+
 }
 
 void InstructionCache::solveFail(Processor* processor, const int &blockInMemory, const int &victimBlock)
@@ -33,4 +35,5 @@ void InstructionCache::solveFail(Processor* processor, const int &blockInMemory,
             processor->advanceClockCycle();
         }
     }
+    blockID[victimBlock] = blockInMemory;
 }

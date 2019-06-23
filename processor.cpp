@@ -38,6 +38,7 @@ void Processor::run()
                 execute(instruction);
                 break;
             case contextSwitch:
+
                 break;
             // No se ocupa default porque Qt se pone en varas, ya que sí estamos poniendo los casos de todo el enum.
         }
@@ -48,6 +49,7 @@ void Processor::run()
 
 void Processor::execute(int instruction[])
 {
+    qDebug() << instruction[0] << "on cycle" << this->clock;
     switch(instruction[0])
     {
         case addi:
@@ -84,7 +86,10 @@ void Processor::execute(int instruction[])
             break;
     }
     if(instruction[0] != fin)
+    {
+        this->pc+=4;
         currentState = instructionFetch;
+    }
 }
 
 void Processor::advanceClockCycle()
