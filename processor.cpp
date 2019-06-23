@@ -16,7 +16,6 @@ Processor::Processor(const size_t id):
 
 void Processor::run()
 {
-    qDebug() << this->processorId;
     int instruction[4] = {0};
     while(1) // Hay que poner que mientras hay al menos uno corriendo
     {

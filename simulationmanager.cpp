@@ -34,14 +34,11 @@ void SimulationManager::beginSimulation()
 
 void SimulationManager::createProcessors()
 {
-    pthread_barrier_t* barrier = new pthread_barrier_t();
-    // Aca se puede hacer mas general, al igual que en varios lados, para que no sea un 3 s
-    pthread_barrier_init(barrier,nullptr, unsigned( numOfProcessor) );
+
     for (size_t index = 0; index < this->processors.size(); ++index)
     {
         // Create processor threads and add to an array
         Processor *processorThread = this->processors.at(index) = new Processor(index);
-        this->processors.at(index)->init_barrier(barrier);
         (void)processorThread;
         //connect(processorThread, &Processor::resultReady, this, &MyObject::handleResults);
         //QObject::connect(processorThread, &Processor::finished, processorThread, &QObject::deleteLater);
@@ -83,9 +80,13 @@ void SimulationManager::distributeHilillos()
 
 void SimulationManager::processorRun()
 {
+    pthread_barrier_t* barrier = new pthread_barrier_t();
+    // Aca se puede hacer mas general, al igual que en varios lados, para que no sea un 3 s
+    pthread_barrier_init(barrier,nullptr, unsigned( numOfProcessor) );
     for (size_t index = 0; index < this->processors.size(); ++index)
     {
-       this->processors.at(index)->run();
+       this->processors.at(index)->init_barrier(barrier);
+       this->processors.at(index)->start();
     }
 }
 

@@ -62,10 +62,10 @@ class Processor: public QThread
         jalr = 103,
         fin = 999,
     };
-
+protected:
+    void run() override;
 private:
     size_t processorId;
-
     int pc;
     std::vector<int> registers;
     std::vector<int> instructionMemory;
@@ -93,7 +93,7 @@ public:
     friend class InstructionCache;
     friend class DataCache;
 
-    void run() override;
+
 
     inline bool isMemoryInstruction(int& instructionCode)
     {
