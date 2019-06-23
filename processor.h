@@ -24,6 +24,14 @@ class Processor: public QThread
         int block;
     } message;
 
+    enum PcbStates
+    {
+        wait,
+        ready,
+        running,
+        finished
+    };
+
     typedef struct
     {
         DirectoryStates state;
@@ -36,6 +44,7 @@ class Processor: public QThread
         dataFetch,
         execution,
         contextSwitch,
+        finish
     };
 
     enum MessageTypes
@@ -84,16 +93,20 @@ private:
     InstructionCache instructionsCache;
     DataCache dataCache;
     // Esto despues lo cambiamos por la lista enlazada circular con nodo centinela :V
-    std::vector<Pcb> pcbQueue;
+    std::queue<Pcb*> pcbRunningQueue;
+    std::queue<Pcb*> pcbFinishedQueue;
+
     int rl;
+    size_t currentQuatum;
+    size_t maxQuatum;
 
 public:
-    Processor(const size_t id);
+    Processor(const size_t id, const size_t quatum);
 
     friend class InstructionCache;
     friend class DataCache;
 
-
+    inline void pushPcb(Pcb* pcb) { pcbRunningQueue.push(pcb);}
 
     inline bool isMemoryInstruction(int& instructionCode)
     {
@@ -112,6 +125,8 @@ public:
     void sendMessage(MessageTypes messageType);
 
     void processAcks(const size_t& waitingAcks);
+
+    void makeContextSwitch(int instruction[4]);
 
     inline void execAddi(unsigned destinationRegister, unsigned sourceRegister, int immediate)
     {

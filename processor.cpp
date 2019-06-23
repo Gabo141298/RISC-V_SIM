@@ -1,12 +1,14 @@
 #include "processor.h"
 #include <QDebug>
 
-Processor::Processor(const size_t id):
+Processor::Processor(const size_t id, const size_t quatum):
     processorId{id},
     pc {0},
     clock{0},
     currentState{instructionFetch},
-    rl {-1}
+    rl {-1},
+    maxQuatum{quatum}
+
 {
     registers.resize(32);
     instructionMemory.resize(64 * 4); // Cada instrucción está compuesta por cuatro enteros para efectos de la simulación
@@ -33,19 +35,32 @@ void Processor::run()
                 break;
             // Al igual que en el fetch de instrucciones, en datos se resuelven los fallos
             case dataFetch:
+                ++currentQuatum;
                 break;
             case execution:
                 execute(instruction);
+                ++currentQuatum;
                 break;
             case contextSwitch:
+                makeContextSwitch(instruction);
+             break;
 
+                // Incremente la barrera
+        case finish:
                 break;
             // No se ocupa default porque Qt se pone en varas, ya que sí estamos poniendo los casos de todo el enum.
+        }
+
+        if (currentQuatum == maxQuatum)
+        {
+            currentState = contextSwitch;
+            currentQuatum = 0;
         }
 
         advanceClockCycle();
     }
 }
+
 
 void Processor::execute(int instruction[])
 {
@@ -113,6 +128,44 @@ void Processor::processAcks(const size_t& waitingAcks)
     while(waitingAcks > 0)
     {
         // Wait for acks.
+    }
+}
+
+void Processor::makeContextSwitch(int instruction[])
+{
+    // If termino totalmente
+    if (instruction[0] == 999)
+    {
+        Pcb* oldPcb = this->pcbRunningQueue.front();
+        oldPcb->saveState(this->pc, oldPcb->finished, oldPcb->getID(),this->rl, this->registers);
+        this->pcbRunningQueue.pop();
+        this->pcbFinishedQueue.push(oldPcb);
+
+        // Verificar si aún quedan
+        this->currentQuatum = 0;
+
+        if (!this->pcbRunningQueue.empty())
+        {
+            Pcb* current = this->pcbRunningQueue.front();
+            current->restore(this->pc,this->rl,this->registers);
+            this->currentState = instructionFetch;
+        }
+        else
+        {
+            this->currentState = finish;
+        }
+    }
+    // Se le acabo el quatum
+    else
+    {
+        Pcb* oldPcb = this->pcbRunningQueue.front();
+        oldPcb->saveState(this->pc, oldPcb->wait, oldPcb->getID(),this->rl, this->registers);
+        this->pcbRunningQueue.pop();
+        this->pcbRunningQueue.push(oldPcb);
+
+        Pcb* currentPcb = this->pcbRunningQueue.front();
+        currentPcb->restore(this->pc, this->rl, this->registers);
+        this->currentState = instructionFetch;
     }
 }
 

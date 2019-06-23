@@ -9,7 +9,7 @@ SimulationManager::SimulationManager()
 
 }
 
-SimulationManager::SimulationManager(const int quatum, const QString dir, const size_t numberOfProccesors):
+SimulationManager::SimulationManager(const size_t quatum, const QString dir, const size_t numberOfProccesors):
     quatum{quatum} ,
     dir{dir},
     numOfProcessor{numberOfProccesors}
@@ -38,7 +38,7 @@ void SimulationManager::createProcessors()
     for (size_t index = 0; index < this->processors.size(); ++index)
     {
         // Create processor threads and add to an array
-        Processor *processorThread = this->processors.at(index) = new Processor(index);
+        Processor *processorThread = this->processors.at(index) = new Processor(index, this->quatum);
         (void)processorThread;
         //connect(processorThread, &Processor::resultReady, this, &MyObject::handleResults);
         //QObject::connect(processorThread, &Processor::finished, processorThread, &QObject::deleteLater);
@@ -53,6 +53,8 @@ void SimulationManager::distributeHilillos()
     
     std::vector< std::vector<int>* > memoryHilillos(numOfProcessor);
 
+
+
     // Gets a pointer to the instruction memory of each processor
     for (size_t index = 0; index < this->processors.size(); ++index)
     {
@@ -61,6 +63,8 @@ void SimulationManager::distributeHilillos()
     // numOfProcessor cambiar todos los 3
     // Counter that stores the current memory location of each processor
     size_t counter[3] = {0,0,0};
+    size_t pc[3] = {0,0,0};
+    int id = 0;
 
     // Processor currently
     size_t pos = 0;
@@ -68,13 +72,23 @@ void SimulationManager::distributeHilillos()
     // Iterate though the hilillos
     for (/*iteratorBegin*/; iteratorBegin != iteratorEnd; ++iteratorBegin)
     {
-        for(size_t index = 0; index < iteratorBegin->size(); ++index)
+        // Removing empy std::vector
+        if (iteratorBegin->size() > 0)
         {
-            qDebug() << "Asignig to processor" << pos%3 << "at mem pos" << counter[pos%3] << "a" << iteratorBegin->at(index);
-            memoryHilillos[pos%3]->at(counter[pos%3]) = iteratorBegin->at(index);
-            ++counter[pos%3];
+            Pcb* temp = new Pcb(counter[pos%3], id);
+            this->processors.at(pos%3)->pushPcb(temp);
+
+            qDebug() << "Init PCB" << "with hilillo" << id << "Beginning at mem pos" << counter[pos%3] << "to proccesor" << pos%3;
+
+            for(size_t index = 0; index < iteratorBegin->size(); ++index)
+            {
+                //qDebug() << "Asignig to processor" << pos%3 << "at mem pos" << counter[pos%3] << "a" << iteratorBegin->at(index);
+                memoryHilillos[pos%3]->at(counter[pos%3]) = iteratorBegin->at(index);
+                ++counter[pos%3];
+            }
+            ++pos;
+            ++id;
         }
-        ++pos;
     }
 }
 
