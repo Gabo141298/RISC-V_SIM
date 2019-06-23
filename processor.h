@@ -13,6 +13,8 @@
 #include "pcb.h"
 #include "directory.h"
 
+
+
 class Processor: public QThread
 {
     Q_OBJECT
@@ -84,6 +86,8 @@ public:
     }
 
     void advanceClockCycle();
+
+    void init_barrier(pthread_barrier_t* barrier);
 
     void sendMessage(MessageTypes messageType);
 

@@ -14,6 +14,7 @@ public:
 private:
     int quatum;
     QString dir;
+    size_t numOfProcessor;
     std::vector<Processor*> processors;
     // Change name to hilillo, es un vector que en cada entrada tiene un hilillos completo
     std::vector< std::vector <int> > hilillos;

@@ -2,11 +2,11 @@
 #include <QDebug>
 
 Processor::Processor(const size_t id):
+    processorId{id},
     pc {0},
     clock{0},
     currentState{instructionFetch},
-    rl {-1},
-    processorId{id}
+    rl {-1}
 {
     registers.resize(32);
     instructionMemory.resize(64 * 4); // Cada instrucción está compuesta por cuatro enteros para efectos de la simulación
@@ -50,6 +50,11 @@ void Processor::advanceClockCycle()
 {
     ++this->clock;
     pthread_barrier_wait(this->barrier);
+}
+
+void Processor::init_barrier(pthread_barrier_t *barrier)
+{
+    this->barrier = barrier;
 }
 
 void Processor::sendMessage(Processor::MessageTypes messageType)
