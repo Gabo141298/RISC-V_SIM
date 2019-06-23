@@ -43,6 +43,24 @@ class Processor: public QThread
         ack,
     };
 
+    enum Instructions
+    {
+        addi = 19,
+        add = 71,
+        sub = 83,
+        mul = 72,
+        div = 56,
+        lw = 5,
+        sw = 37,
+        beq = 99,
+        bne = 100,
+        lr = 51,
+        sc = 52,
+        jal = 111,
+        jalr = 103,
+        fin = 999,
+    };
+
 private:
     size_t processorId;
 
@@ -77,11 +95,13 @@ public:
 
     inline bool isMemoryInstruction(int& instructionCode)
     {
-        return instructionCode == 5 // lw
-                || instructionCode == 37 // sw
-                || instructionCode == 51 // lr
-                || instructionCode == 52; // sc
+        return instructionCode == lw
+                || instructionCode == sw
+                || instructionCode == lr
+                || instructionCode == sc;
     }
+
+    void execute(int instruction[4]);
 
     void advanceClockCycle();
 
@@ -89,34 +109,34 @@ public:
 
     void processAcks(const size_t& waitingAcks);
 
-    inline void addi(unsigned destinationRegister, unsigned sourceRegister, int immediate)
+    inline void execAddi(unsigned destinationRegister, unsigned sourceRegister, int immediate)
     {
         this->registers[destinationRegister] = this->registers[sourceRegister] + immediate;
     }
-    inline void add(unsigned destinationRegister, unsigned sourceRegister1, unsigned sourceRegister2)
+    inline void execAdd(unsigned destinationRegister, unsigned sourceRegister1, unsigned sourceRegister2)
     {
         this->registers[destinationRegister] = this->registers[sourceRegister1] + this->registers[sourceRegister2];
     }
-    inline void sub(unsigned destinationRegister, unsigned sourceRegister1, unsigned sourceRegister2)
+    inline void execSub(unsigned destinationRegister, unsigned sourceRegister1, unsigned sourceRegister2)
     {
         this->registers[destinationRegister] = this->registers[sourceRegister1] - this->registers[sourceRegister2];
     }
-    inline void mul(unsigned destinationRegister, unsigned sourceRegister1, unsigned sourceRegister2)
+    inline void execMul(unsigned destinationRegister, unsigned sourceRegister1, unsigned sourceRegister2)
     {
         this->registers[destinationRegister] = this->registers[sourceRegister1] * this->registers[sourceRegister2];
     }
-    inline void div(unsigned destinationRegister, unsigned sourceRegister1, unsigned sourceRegister2)
+    inline void execDiv(unsigned destinationRegister, unsigned sourceRegister1, unsigned sourceRegister2)
     {
         this->registers[destinationRegister] = this->registers[sourceRegister1] / this->registers[sourceRegister2];
     }
 
     inline std::vector<int>* getInstructionMemory() {return &this->instructionMemory;}
 
-    void beq(unsigned sourceRegister1, unsigned sourceRegister2, int immediate);
-    void bne(unsigned sourceRegister1, unsigned sourceRegister2, int immediate);
+    void execBeq(unsigned sourceRegister1, unsigned sourceRegister2, int immediate);
+    void execBne(unsigned sourceRegister1, unsigned sourceRegister2, int immediate);
 
-    void jal(unsigned destinationRegister, int immediate);
-    void jalr(unsigned destinationRegister, unsigned sourceRegister, int immediate);
+    void execJal(unsigned destinationRegister, int immediate);
+    void execJalr(unsigned destinationRegister, unsigned sourceRegister, int immediate);
 };
 
 #endif // PROCESSOR_H
