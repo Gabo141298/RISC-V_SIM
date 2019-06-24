@@ -10,7 +10,7 @@ Pcb::Pcb():
 }
 
 
-Pcb::Pcb(size_t pc, int id):
+Pcb::Pcb(int pc, int id):
     pc{pc},
     rl{-1},
     id{id},

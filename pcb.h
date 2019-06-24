@@ -23,7 +23,7 @@ public:
     int id;
     PcbStates state;
         Pcb();
-        Pcb(size_t pc, int id);
+        Pcb(int pc, int id);
         inline int getID(){return this->id;}
         // ID, pc, registros, estado. (no se para que el estado)
         void saveState(const int pc, PcbStates state, int id, int rl,  std::vector<int>& registers);

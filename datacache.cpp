@@ -8,9 +8,9 @@ DataCache::DataCache()
 
 int DataCache::getDataAt(Processor* processor, int dataPosition)
 {
-    int blockInMemory = dataPosition / 16;
+    int blockInMemory = dataPosition / 64;
     int blockInCache = blockInMemory % 4;
-    int wordInBlock = (dataPosition / 4) % 4;
+    int wordInBlock = (dataPosition / 64) % 4;
 
     if(!( isWordInCache(blockInMemory, blockInCache) && (state[blockInCache] == shared || state[blockInCache] == modified) ))
         solveFail(processor, blockInMemory, blockInCache, load);
@@ -19,9 +19,9 @@ int DataCache::getDataAt(Processor* processor, int dataPosition)
 
 void DataCache::storeDataAt(Processor *processor, int dataPosition, int word)
 {
-    int blockInMemory = dataPosition / 16;
+    int blockInMemory = dataPosition / 64;
     int blockInCache = blockInMemory % 4;
-    int wordInBlock = (dataPosition / 4) % 4;
+    int wordInBlock = (dataPosition / 64) % 4;
 
     if(!( isWordInCache(blockInMemory, blockInCache) && (state[blockInCache] == modified) ))
         solveFail(processor, blockInMemory, blockInCache, store);
