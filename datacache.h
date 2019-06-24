@@ -17,6 +17,8 @@ class DataCache : public Cache
 private:
     int cacheMem[4][4] = {{0}};
 public:
+    friend Processor;
+
     DataCache();
     int getDataAt(Processor* processor, int dataPosition);
     void storeDataAt(Processor* processor, int dataPosition, int word);

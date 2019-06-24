@@ -25,14 +25,22 @@ class Processor: public QThread
         leaveAsShared,
         ack,
     };
-
-    typedef struct
+public:
+    struct Message
     {
         MessageTypes opcode;
         int blockToChangeState;
         int* otherCacheBlock;
-    } message;
-
+        size_t sendAckTo;
+        Message(MessageTypes opcode, int blockToChangeState = -1, int* otherCacheBlock = nullptr, size_t sendAckTo = 0)
+            : opcode{opcode}
+            , blockToChangeState{blockToChangeState}
+            , otherCacheBlock{otherCacheBlock}
+            , sendAckTo{sendAckTo}
+        {
+        }
+    };
+private:
     enum PcbStates
     {
         wait,
@@ -86,7 +94,8 @@ private:
     std::vector<directoryBlock> directory;
     QMutex directoryMutex;
 
-    std::queue<message> messages;
+    std::queue<Message> mail;
+    std::queue<Message> messagesToProcess;
     QMutex messagesMutex;
 
     pthread_barrier_t* barrier;
@@ -124,13 +133,13 @@ public:
     void accessMemory(int instruction[4]);
 
     void advanceClockCycle();
-    void processMessages();
+    void processMessages(size_t* waitingAcks = nullptr);
 
     void init_barrier(pthread_barrier_t* barrier);
 
-    void sendMessage(MessageTypes messageType);
+    void sendMessage(Message message, size_t processorId);
 
-    void processAcks(const size_t& waitingAcks);
+    void processAcks(size_t* waitingAcks);
 
     void makeContextSwitch(int instruction[4]);
 

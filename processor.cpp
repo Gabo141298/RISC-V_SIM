@@ -5,15 +5,15 @@ Processor::Processor(const size_t id, const size_t quatum):
     processorId{id},
     pc {0},
     loopCondition{true},
+    registers{std::vector<int>(32, 0)},
+    instructionMemory{std::vector<int>(64 * 4, 0)}, // Cada instrucción está compuesta por cuatro enteros para efectos de la simulación
+    dataMemory{std::vector<int>(32, 1)},
     clock{0},
     currentState{instructionFetch},
     rl {-1},
     maxQuatum{quatum}
 
 {
-    registers.resize(32);
-    instructionMemory.resize(64 * 4); // Cada instrucción está compuesta por cuatro enteros para efectos de la simulación
-    dataMemory.resize(32);
     processors.resize(3);
     directory.resize(8);
 }
@@ -23,8 +23,7 @@ void Processor::run()
     int instruction[4] = {0};
     while(loopCondition) // Hay que poner que mientras hay al menos uno corriendo
     {
-        if(!messages.empty())
-            processMessages();
+        processMessages();
 
         switch(currentState)
         {
@@ -37,11 +36,14 @@ void Processor::run()
                 break;
             // Al igual que en el fetch de instrucciones, en datos se resuelven los fallos
             case dataFetch:
+                accessMemory(instruction);
                 ++currentQuatum;
+                advanceClockCycle();
                 break;
             case execution:
                 execute(instruction);
                 ++currentQuatum;
+                advanceClockCycle();
                 break;
             case contextSwitch:
                 makeContextSwitch(instruction);
@@ -49,17 +51,10 @@ void Processor::run()
 
                 // Incremente la barrera
         case finish:
+                advanceClockCycle();
                 break;
             // No se ocupa default porque Qt se pone en varas, ya que sí estamos poniendo los casos de todo el enum.
         }
-
-        if (currentQuatum == maxQuatum)
-        {
-            currentState = contextSwitch;
-            currentQuatum = 0;
-        }
-
-        advanceClockCycle();
     }
 
     while (!this->pcbFinishedQueue.empty())
@@ -72,12 +67,24 @@ void Processor::run()
                    this->pcbFinishedQueue.front()->registers;
        this->pcbFinishedQueue.pop();
     }
+
+    if(processorId == 0)
+    {
+        for(size_t currentProcessor = 0; currentProcessor < processors.size(); ++currentProcessor)
+        {
+            /*for(size_t currentPosition = 0; currentPosition < processors[currentProcessor]->dataMemory.size(); ++currentPosition)
+            {
+                qDebug() << currentProcessor * 32 + currentPosition << ": " << processors[currentProcessor]->dataMemory[currentPosition];
+            }*/
+            qDebug() << currentProcessor << ": " << processors[currentProcessor]->dataMemory;
+        }
+    }
 }
 
 
 void Processor::execute(int instruction[])
 {
-    //qDebug() << instruction[0] << "on cycle" << this->clock;
+    //qDebug() << this->processorId << ": " << instruction[0] << "on cycle" << this->clock;
     switch(instruction[0])
     {
         case addi:
@@ -122,12 +129,14 @@ void Processor::execute(int instruction[])
 
 void Processor::accessMemory(int instruction[4])
 {
+    //qDebug() << this->processorId << ": " << instruction[0] << "on cycle" << this->clock;
     switch(instruction[0])
     {
         case lw:
             registers[instruction[1]] = dataCache.getDataAt(this, registers[instruction[2]] + instruction[3]);
             break;
         case sw:
+            dataCache.storeDataAt(this, registers[instruction[1]] + instruction[3], registers[instruction[2]]);
             break;
         case lr:
             break;
@@ -142,6 +151,12 @@ void Processor::accessMemory(int instruction[4])
 
 void Processor::advanceClockCycle()
 {
+    if (currentQuatum == maxQuatum)
+    {
+        currentState = contextSwitch;
+        currentQuatum = 0;
+    }
+
     ++this->clock;
     pthread_barrier_wait(this->barrier);
 
@@ -155,12 +170,45 @@ void Processor::advanceClockCycle()
     }
     this->loopCondition = breakLoop;
 
+
+    while(!this->mail.empty())
+    {
+        messagesToProcess.push( this->mail.front());
+        this->mail.pop();
+    }
+
+
+
     pthread_barrier_wait(this->barrier);
 }
 
-void Processor::processMessages()
+void Processor::processMessages(size_t* waitingAcks)
 {
+    while ( !this->messagesToProcess.empty() )
+    {
+        //qDebug() << this->processorId << ": " << "Processing " << messagesToProcess.size() << " messages";
+        Message currentMessage = messagesToProcess.front();
+        messagesToProcess.pop();
 
+        int blockInCache = currentMessage.blockToChangeState % 4;
+
+        if(currentMessage.opcode == ack && waitingAcks)
+        {
+            --*waitingAcks;
+        }
+        else if (currentMessage.opcode == invalidate)
+        {
+            dataCache.state[blockInCache] = invalid;
+        }
+        else if(currentMessage.opcode == leaveAsShared)
+        {
+            dataCache.copyBlockToMem(this, currentMessage.blockToChangeState, blockInCache, true, currentMessage.otherCacheBlock);
+            dataCache.state[blockInCache] = shared;
+        }
+
+        if(currentMessage.opcode == invalidate || currentMessage.opcode == leaveAsShared)
+            sendMessage(Message(ack), currentMessage.sendAckTo);
+    }
 }
 
 void Processor::init_barrier(pthread_barrier_t *barrier)
@@ -168,21 +216,25 @@ void Processor::init_barrier(pthread_barrier_t *barrier)
     this->barrier = barrier;
 }
 
-void Processor::sendMessage(Processor::MessageTypes messageType)
+void Processor::sendMessage(Message message, size_t processorId)
 {
-    (void)messageType;
+    processors[processorId]->messagesMutex.lock();
+    processors[processorId]->mail.push(message);
+    processors[processorId]->messagesMutex.unlock();
 }
 
-void Processor::processAcks(const size_t& waitingAcks)
+void Processor::processAcks(size_t* waitingAcks)
 {
-    while(waitingAcks > 0)
+    while(*waitingAcks > 0)
     {
-        // Wait for acks.
+        processMessages(waitingAcks);
+        advanceClockCycle();
     }
 }
 
 void Processor::makeContextSwitch(int instruction[])
 {
+    this->rl = -1;
     // If termino totalmente
     if (instruction[0] == 999)
     {

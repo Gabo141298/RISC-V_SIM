@@ -117,6 +117,7 @@ void SimulationManager::readHilillos()
         if (QFileInfo(directoryIterator.filePath()).isFile())
             if (QFileInfo(directoryIterator.filePath()).suffix() == "txt")
             {
+                qDebug() << "Hilillo: " << directoryIterator.filePath();
                 if (!file.open(QIODevice::ReadOnly))
                 {
                     qDebug() << "Couldnt open " << directoryIterator.filePath();

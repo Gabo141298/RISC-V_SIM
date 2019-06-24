@@ -49,6 +49,8 @@ void DataCache::solveFail(Processor* processor, const int &blockInMemory, const 
     processor->processors[victimDirectoryHome]->directoryMutex.unlock();
 
     obtainBlock(processor, blockInMemory, victimBlock, operation);
+
+    blockID[victimBlock] = blockInMemory;
 }
 
 void DataCache::copyBlockToMem(Processor *processor, const int &blockInMemory, const int &modifiedBlock, bool copyToAnotherCache, int* otherCacheBlock)
@@ -61,7 +63,7 @@ void DataCache::copyBlockToMem(Processor *processor, const int &blockInMemory, c
     for(size_t currentWord = 0; currentWord < 4; ++currentWord)
     {
         // Multiplicar por 16 nos da la dirección de la primera palabra de ese bloque.
-        processor->dataMemory[static_cast<size_t>(blockInMemory) * 16 + currentWord] = cacheMem[modifiedBlock][currentWord];
+        processor->dataMemory[static_cast<size_t>(blockInMemory) * 4 + currentWord] = cacheMem[modifiedBlock][currentWord];
         if(copyToAnotherCache && otherCacheBlock)
             otherCacheBlock[currentWord] = cacheMem[modifiedBlock][currentWord];
 
@@ -80,7 +82,7 @@ void DataCache::copyBlockFromMem(Processor *processor, const int &blockInMemory,
         clocksPerCycle *= 2;
     for(size_t currentWord = 0; currentWord < 4; ++currentWord)
     {
-        cacheMem[blockInCache][currentWord] = processor->dataMemory[static_cast<size_t>(blockInMemory) * 16 + currentWord];
+        cacheMem[blockInCache][currentWord] = processor->dataMemory[static_cast<size_t>(blockInMemory) * 4 + currentWord];
                                                     // Multiplicar por 16 nos da la dirección de la primera palabra de ese bloque.
 
         // Si está en la memoria local, clocksPerCycle va a ser 4, por lo que se ejecuta advanceClockCycle 16 veces.
@@ -92,25 +94,28 @@ void DataCache::copyBlockFromMem(Processor *processor, const int &blockInMemory,
 
 void DataCache::changeDirectoryState(Processor *processor, const int &blockInMemory, states blockNewState)
 {
-    size_t directoryHome = static_cast<size_t>(blockInMemory) / 8;
-    size_t blockInProcessor = static_cast<size_t>(blockInMemory) % 8;
-
-    Processor::directoryBlock* directory = &processor->processors[directoryHome]->directory[blockInProcessor];
-    switch(blockNewState)
+    if(blockInMemory >= 0)
     {
-        case invalid:
-            directory->processor[processor->processorId] = 0;
-            if(directory->processor[0] == 0 && directory->processor[1] == 0 && directory->processor[2] == 0)
-                directory->state = dirUncached;
-            break;
-        case modified:
-            directory->state = dirModified;
-            directory->processor[processor->processorId] = 1;
-            break;
-        case shared:
-            directory->state = dirShared;
-            directory->processor[processor->processorId] = 1;
-            break;
+        size_t directoryHome = static_cast<size_t>(blockInMemory) / 8;
+        size_t blockInProcessor = static_cast<size_t>(blockInMemory) % 8;
+
+        Processor::directoryBlock* directory = &processor->processors[directoryHome]->directory[blockInProcessor];
+        switch(blockNewState)
+        {
+            case invalid:
+                directory->processor[processor->processorId] = 0;
+                if(directory->processor[0] == 0 && directory->processor[1] == 0 && directory->processor[2] == 0)
+                    directory->state = dirUncached;
+                break;
+            case modified:
+                directory->state = dirModified;
+                directory->processor[processor->processorId] = 1;
+                break;
+            case shared:
+                directory->state = dirShared;
+                directory->processor[processor->processorId] = 1;
+                break;
+        }
     }
 }
 
@@ -148,18 +153,18 @@ void DataCache::obtainBlock(Processor *processor, const int &blockInMemory, cons
 
                 // En este caso no se debe cambiar a cero, porque el otro procesador va a seguir teniendo el bloque, nada más que compartido.
                 if(operation == load)
-                    processor->sendMessage(Processor::MessageTypes::leaveAsShared);
+                    processor->sendMessage(Processor::Message(Processor::MessageTypes::leaveAsShared, blockInMemory, cacheMem[blockInCache], processor->processorId), index);
                 // En este caso sí se cambia a cero, porque se tiene que representar solamente a quien tiene el bloque modificado. El resto lo debe tener inválido.
                 else if(operation == store)
                 {
                     directory->processor[index] = 0;
-                    processor->sendMessage(Processor::MessageTypes::invalidate);
+                    processor->sendMessage(Processor::Message(Processor::MessageTypes::invalidate, blockInMemory, cacheMem[blockInCache], processor->processorId), index);
                 }
             }
         }
 
         // Se encarga de procesar todos los acks, incluyendo el avance de ciclos de reloj.
-        processor->processAcks(messagesToSend);
+        processor->processAcks(&messagesToSend);
 
         if( operation == store && directory->state == dirShared )
             copyBlockFromMem(processor, blockInMemory, blockInCache);
