@@ -9,10 +9,10 @@ class SimulationManager
 {
 public:
     SimulationManager();
-    SimulationManager(int quatum, const QString dir,const size_t numberOfProccesors);
+    SimulationManager(size_t quatum, const QString dir,const size_t numberOfProccesors);
     void beginSimulation();
 private:
-    int quatum;
+    size_t quatum;
     QString dir;
     size_t numOfProcessor;
     std::vector<Processor*> processors;
