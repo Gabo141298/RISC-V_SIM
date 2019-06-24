@@ -16,7 +16,7 @@ public:
         return blockID[blockInCache] == blockInMemory;
     }
     void fetch(Processor* processor, int instruction[4]);
-    void solveFail(Processor* processor, const int &blockInMemory, const int &blockInCache) override;
+    void solveFail(Processor* processor, const int &blockInMemory, const int &blockInCache);
 };
 
 #endif // INSTRUCTIONCACHE_H

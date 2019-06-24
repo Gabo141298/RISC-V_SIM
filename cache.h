@@ -17,9 +17,6 @@ public:
     int blockID[4] = {-1,-1,-1,-1};
     states state[4] = {invalid};
 
-    // Esto es porque me imagino que esto va a ser distinto
-    virtual void solveFail(Processor* processor, const int &blockInMemory, const int &blockInCache) = 0;
-
     virtual ~Cache();
 };
 

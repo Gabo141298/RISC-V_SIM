@@ -18,10 +18,19 @@
 class Processor: public QThread
 {
     Q_OBJECT
+
+    enum MessageTypes
+    {
+        invalidate,
+        leaveAsShared,
+        ack,
+    };
+
     typedef struct
     {
-        char opcode;
-        int block;
+        MessageTypes opcode;
+        int blockToChangeState;
+        int* otherCacheBlock;
     } message;
 
     typedef struct
@@ -36,13 +45,6 @@ class Processor: public QThread
         dataFetch,
         execution,
         contextSwitch,
-    };
-
-    enum MessageTypes
-    {
-        invalidate,
-        leaveAsShared,
-        ack,
     };
 
     enum Instructions
@@ -72,6 +74,7 @@ private:
     std::vector<int> dataMemory;
 
     std::vector<directoryBlock> directory;
+    QMutex directoryMutex;
     Processor* processors[3];
 
     std::queue<message> messages;
@@ -105,7 +108,10 @@ public:
 
     void execute(int instruction[4]);
 
+    void accessMemory(int instruction[4]);
+
     void advanceClockCycle();
+    void processMessages();
 
     void init_barrier(pthread_barrier_t* barrier);
 

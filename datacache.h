@@ -8,15 +8,27 @@ class Processor;
 
 class DataCache : public Cache
 {
+    enum MemoryOperation
+    {
+        load,
+        store,
+    };
+
 private:
     int cacheMem[4][4] = {{0}};
 public:
     DataCache();
-    int getDataAt();
-    void solveFail(Processor* processor, const int &blockInMemory, const int &victimBlock) override;
-    void copyBlockToMem(Processor* processor, const int &blockInMemory, const int &modifiedBlock);
+    int getDataAt(Processor* processor, int dataPosition);
+    void storeDataAt(Processor* processor, int dataPosition, int word);
+    void solveFail(Processor* processor, const int &blockInMemory, const int &victimBlock, MemoryOperation operation);
+    void copyBlockToMem(Processor* processor, const int &blockInMemory, const int &modifiedBlock, bool copyToAnotherCache = false, int* otherCacheBlock = nullptr);
+    void copyBlockFromMem(Processor *processor, const int &blockInMemory, const int &blockInCache);
     void changeDirectoryState(Processor* processor, const int &blockInMemory, states blockNewState);
-    void obtainBlock(Processor* processor, const int &blockInMemory, const int &victimBlock);
+    void obtainBlock(Processor* processor, const int &blockInMemory, const int &blockInCache, MemoryOperation operation);
+    inline bool isWordInCache(const int &blockInMemory, const int &blockInCache)
+    {
+        return blockID[blockInCache] == blockInMemory;
+    }
 };
 
 #endif // DATACACHE_H

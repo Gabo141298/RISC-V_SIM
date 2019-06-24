@@ -20,7 +20,7 @@ void Processor::run()
     while(1) // Hay que poner que mientras hay al menos uno corriendo
     {
         if(!messages.empty())
-            (void)this; // Process message
+            processMessages();
 
         switch(currentState)
         {
@@ -92,10 +92,35 @@ void Processor::execute(int instruction[])
     }
 }
 
+void Processor::accessMemory(int instruction[4])
+{
+    switch(instruction[0])
+    {
+        case lw:
+            registers[instruction[1]] = dataCache.getDataAt(this, registers[instruction[2]] + instruction[3]);
+            break;
+        case sw:
+            break;
+        case lr:
+            break;
+        case sc:
+            break;
+        default:
+            break;
+    }
+    this->pc += 4;
+    currentState = instructionFetch;
+}
+
 void Processor::advanceClockCycle()
 {
     ++this->clock;
     pthread_barrier_wait(this->barrier);
+}
+
+void Processor::processMessages()
+{
+
 }
 
 void Processor::init_barrier(pthread_barrier_t *barrier)
