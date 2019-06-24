@@ -99,6 +99,7 @@ void SimulationManager::processorRun()
     pthread_barrier_init(barrier,nullptr, unsigned( numOfProcessor) );
     for (size_t index = 0; index < this->processors.size(); ++index)
     {
+       this->processors.at(index)->processors = this->processors;
        this->processors.at(index)->init_barrier(barrier);
        this->processors.at(index)->start();
     }

@@ -76,12 +76,12 @@ protected:
 private:
     size_t processorId;
     int pc;
+    bool loopCondition;
     std::vector<int> registers;
     std::vector<int> instructionMemory;
     std::vector<int> dataMemory;
 
     std::vector<directoryBlock> directory;
-    Processor* processors[3];
 
     std::queue<message> messages;
     QMutex messagesMutex;
@@ -105,7 +105,7 @@ public:
 
     friend class InstructionCache;
     friend class DataCache;
-
+    std::vector<Processor*> processors;
     inline void pushPcb(Pcb* pcb) { pcbRunningQueue.push(pcb);}
 
     inline bool isMemoryInstruction(int& instructionCode)

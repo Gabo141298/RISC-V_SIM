@@ -4,6 +4,7 @@
 Processor::Processor(const size_t id, const size_t quatum):
     processorId{id},
     pc {0},
+    loopCondition{true},
     clock{0},
     currentState{instructionFetch},
     rl {-1},
@@ -13,13 +14,14 @@ Processor::Processor(const size_t id, const size_t quatum):
     registers.resize(32);
     instructionMemory.resize(64 * 4); // Cada instrucción está compuesta por cuatro enteros para efectos de la simulación
     dataMemory.resize(32);
+    processors.resize(3);
     directory.resize(8);
 }
 
 void Processor::run()
 {
     int instruction[4] = {0};
-    while(1) // Hay que poner que mientras hay al menos uno corriendo
+    while(loopCondition) // Hay que poner que mientras hay al menos uno corriendo
     {
         if(!messages.empty())
             (void)this; // Process message
@@ -59,12 +61,23 @@ void Processor::run()
 
         advanceClockCycle();
     }
+
+    while (!this->pcbFinishedQueue.empty())
+    {
+       qDebug() << this->processorId <<
+                   this->pcbFinishedQueue.front()->getID() <<
+                   this->pcbFinishedQueue.front()->pc <<
+                   this->pcbFinishedQueue.front()->rl <<
+                   this->pcbFinishedQueue.front()->state <<
+                   this->pcbFinishedQueue.front()->registers;
+       this->pcbFinishedQueue.pop();
+    }
 }
 
 
 void Processor::execute(int instruction[])
 {
-    qDebug() << instruction[0] << "on cycle" << this->clock;
+    //qDebug() << instruction[0] << "on cycle" << this->clock;
     switch(instruction[0])
     {
         case addi:
@@ -110,6 +123,18 @@ void Processor::execute(int instruction[])
 void Processor::advanceClockCycle()
 {
     ++this->clock;
+    pthread_barrier_wait(this->barrier);
+
+    bool breakLoop = false;
+
+    for (size_t index = 0; index < processors.size(); ++index)
+    {
+        if (processors.at(index)->currentState != finish)
+            breakLoop = true;
+
+    }
+    this->loopCondition = breakLoop;
+
     pthread_barrier_wait(this->barrier);
 }
 
