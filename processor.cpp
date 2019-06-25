@@ -68,6 +68,8 @@ void Processor::run()
        this->pcbFinishedQueue.pop();
     }
 
+    pthread_barrier_wait(barrier);
+
     if(processorId == 0)
     {
         for(size_t currentProcessor = 0; currentProcessor < processors.size(); ++currentProcessor)
@@ -76,7 +78,9 @@ void Processor::run()
             {
                 qDebug() << currentProcessor * 32 + currentPosition << ": " << processors[currentProcessor]->dataMemory[currentPosition];
             }*/
-            qDebug() << currentProcessor << ": " << processors[currentProcessor]->dataMemory;
+            qDebug() << currentProcessor << " Memory: " << processors[currentProcessor]->dataMemory;
+            qDebug() << currentProcessor << " Cache: ";
+            processors[currentProcessor]->dataCache.toString();
         }
     }
 }
@@ -198,11 +202,14 @@ void Processor::processMessages(size_t* waitingAcks)
         }
         else if (currentMessage.opcode == invalidate)
         {
+            if(dataCache.state[currentMessage.blockToChangeState] == modified)
+                dataCache.copyBlockToMem(this, currentMessage.blockToChangeState, blockInCache, true, currentMessage.otherCacheBlock);
             dataCache.state[blockInCache] = invalid;
         }
         else if(currentMessage.opcode == leaveAsShared)
         {
-            dataCache.copyBlockToMem(this, currentMessage.blockToChangeState, blockInCache, true, currentMessage.otherCacheBlock);
+            if(dataCache.state[currentMessage.blockToChangeState] == modified)
+                dataCache.copyBlockToMem(this, currentMessage.blockToChangeState, blockInCache, true, currentMessage.otherCacheBlock);
             dataCache.state[blockInCache] = shared;
         }
 
