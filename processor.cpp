@@ -202,13 +202,13 @@ void Processor::processMessages(size_t* waitingAcks)
         }
         else if (currentMessage.opcode == invalidate)
         {
-            if(dataCache.state[currentMessage.blockToChangeState] == modified)
+            if(dataCache.state[blockInCache] == modified)
                 dataCache.copyBlockToMem(this, currentMessage.blockToChangeState, blockInCache, true, currentMessage.otherCacheBlock);
             dataCache.state[blockInCache] = invalid;
         }
         else if(currentMessage.opcode == leaveAsShared)
         {
-            if(dataCache.state[currentMessage.blockToChangeState] == modified)
+            if(dataCache.state[blockInCache] == modified)
                 dataCache.copyBlockToMem(this, currentMessage.blockToChangeState, blockInCache, true, currentMessage.otherCacheBlock);
             dataCache.state[blockInCache] = shared;
         }

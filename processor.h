@@ -51,7 +51,7 @@ private:
 
     typedef struct
     {
-        DirectoryStates state;
+        DirectoryStates state = dirUncached;
         char processor[3];
     } directoryBlock;
 

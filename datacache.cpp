@@ -12,7 +12,9 @@ int DataCache::getDataAt(Processor* processor, int dataPosition)
     int blockInCache = blockInMemory % 4;
     int wordInBlock = (dataPosition / 4) % 4;
 
-    if(!( isWordInCache(blockInMemory, blockInCache) && (state[blockInCache] == shared || state[blockInCache] == modified) ))
+    qDebug() << "Load: " << dataPosition << " Block in memory: " << blockInMemory << " in cache: " << blockInCache << " word: " << wordInBlock;
+
+    if(!( isWordInCache(blockInMemory, blockInCache) && (state[blockInCache] == shared || state[blockInCache] == modified) ) )
         solveFail(processor, blockInMemory, blockInCache, load);
     return cacheMem[blockInCache][wordInBlock];
 }
@@ -23,14 +25,16 @@ void DataCache::storeDataAt(Processor *processor, int dataPosition, int word)
     int blockInCache = blockInMemory % 4;
     int wordInBlock = (dataPosition / 4) % 4;
 
-    if(!( isWordInCache(blockInMemory, blockInCache) && (state[blockInCache] == modified) ))
+    qDebug() << "Store: " << dataPosition << " Block in memory: " << blockInMemory << " in cache: " << blockInCache << " word: " << wordInBlock;
+
+    if(!( isWordInCache(blockInMemory, blockInCache) && (state[blockInCache] == modified) ) )
         solveFail(processor, blockInMemory, blockInCache, store);
     cacheMem[blockInCache][wordInBlock] = word;
 }
 
 void DataCache::solveFail(Processor* processor, const int &blockInMemory, const int &victimBlock, MemoryOperation operation)
 {
-    int victimDirectoryHome = blockID[victimBlock] / 8;
+    size_t victimDirectoryHome = static_cast<size_t>(blockID[victimBlock]) / 8;
 
     // En caso de que esté inválido, no se necesita consultar el directorio del bloque víctima
     if(state[victimBlock] == shared || state[victimBlock] == modified)
@@ -44,18 +48,22 @@ void DataCache::solveFail(Processor* processor, const int &blockInMemory, const 
         if(state[victimBlock] == modified)
             copyBlockToMem(processor, blockID[victimBlock], victimBlock);
         changeDirectoryState(processor, blockID[victimBlock], invalid);
+        processor->processors[victimDirectoryHome]->directoryMutex.unlock();
     }
-
-    processor->processors[victimDirectoryHome]->directoryMutex.unlock();
 
     obtainBlock(processor, blockInMemory, victimBlock, operation);
 
+    if(operation == store)
+        state[victimBlock] = modified;
+    else if(operation == load)
+        state[victimBlock] = shared;
     blockID[victimBlock] = blockInMemory;
 }
 
 void DataCache::copyBlockToMem(Processor *processor, const int &blockInMemory, const int &modifiedBlock, bool copyToAnotherCache, int* otherCacheBlock)
 {
-    int directoryHome = blockInMemory / 8;
+    size_t directoryHome = static_cast<size_t>(blockInMemory) / 8;
+    size_t blockInProcessor = static_cast<size_t>(blockInMemory) % 8;
     size_t clocksPerCycle = 4;
     if(processor->processorId != directoryHome || copyToAnotherCache)
         clocksPerCycle *= 2;
@@ -63,7 +71,7 @@ void DataCache::copyBlockToMem(Processor *processor, const int &blockInMemory, c
     for(size_t currentWord = 0; currentWord < 4; ++currentWord)
     {
         // Multiplicar por 16 nos da la dirección de la primera palabra de ese bloque.
-        processor->dataMemory[static_cast<size_t>(blockInMemory) * 4 + currentWord] = cacheMem[modifiedBlock][currentWord];
+        processor->processors[directoryHome]->dataMemory[static_cast<size_t>(blockInProcessor) * 4 + currentWord] = cacheMem[modifiedBlock][currentWord];
         if(copyToAnotherCache && otherCacheBlock)
             otherCacheBlock[currentWord] = cacheMem[modifiedBlock][currentWord];
 
@@ -77,12 +85,13 @@ void DataCache::copyBlockToMem(Processor *processor, const int &blockInMemory, c
 void DataCache::copyBlockFromMem(Processor *processor, const int &blockInMemory, const int &blockInCache)
 {
     size_t directoryHome = static_cast<size_t>(blockInMemory) / 8;
+    size_t blockInProcessor = static_cast<size_t>(blockInMemory) % 8;
     size_t clocksPerCycle = 4;
     if(processor->processorId != directoryHome)
         clocksPerCycle *= 2;
     for(size_t currentWord = 0; currentWord < 4; ++currentWord)
     {
-        cacheMem[blockInCache][currentWord] = processor->dataMemory[static_cast<size_t>(blockInMemory) * 4 + currentWord];
+        cacheMem[blockInCache][currentWord] = processor->processors[directoryHome]->dataMemory[static_cast<size_t>(blockInProcessor) * 4 + currentWord];
                                                     // Multiplicar por 16 nos da la dirección de la primera palabra de ese bloque.
 
         // Si está en la memoria local, clocksPerCycle va a ser 4, por lo que se ejecuta advanceClockCycle 16 veces.

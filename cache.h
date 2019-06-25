@@ -15,7 +15,7 @@ class Cache
 public:
     Cache();
     int blockID[4] = {-1,-1,-1,-1};
-    states state[4] = {invalid};
+    states state[4] = {invalid, invalid, invalid, invalid};
 
     virtual ~Cache();
 };
