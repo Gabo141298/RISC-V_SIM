@@ -24,7 +24,6 @@ void Pcb::saveState(const int pc, PcbStates state, int id, int rl,  std::vector<
     this->pc = pc;
     this->state = state;
     this->id = id;
-    this->rl = rl;
 
     size_t index = 0;
     for (std::vector<int>::iterator begin = registers.begin(); begin != registers.end(); ++begin )
@@ -52,7 +51,7 @@ void Pcb::restoreState( int& pc, PcbStates& state, int& id, int& rl,  std::vecto
 void Pcb::restore(int &pc, int &rl, std::vector<int> &registers)
 {
     pc = this->pc;
-    rl = this->rl;
+    //rl = this->rl;
     size_t index = 0;
 
     for (std::vector<int>::iterator begin = registers.begin(); begin != registers.end(); ++begin )

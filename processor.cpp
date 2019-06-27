@@ -143,8 +143,22 @@ void Processor::accessMemory(int instruction[4])
             dataCache.storeDataAt(this, registers[instruction[1]] + instruction[3], registers[instruction[2]]);
             break;
         case lr:
+            // Hace un load normal
+            registers[instruction[1]] = dataCache.getDataAt(this, registers[instruction[2]] + instruction[3]);
+            // Le cambia el valor de rl a -1
+            this->rl = registers[instruction[2]];
             break;
         case sc:
+            // Verifica si el rl es igual a la direccion de memoria de adonde voy a guardar
+            if (this->rl == registers[2])
+            {
+                // Entonces guardo en memoria....
+                // El store en memoria tambien tiene que verificar si el RL del procesador
+                // afecta el proceso
+            }else {
+                // Guardon un  0 en x2
+                // y no escribe
+            }
             break;
         default:
             break;
