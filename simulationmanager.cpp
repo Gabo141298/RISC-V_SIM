@@ -3,6 +3,8 @@
 #include <QDebug>
 #include "processor.h"
 #include <QObject>
+#include <QtAlgorithms>
+#include <algorithm>
 
 SimulationManager::SimulationManager()
 {
@@ -105,26 +107,51 @@ void SimulationManager::processorRun()
     }
 }
 
-
+static bool VersionCompare(const QFile* i, const QFile* j)
+{
+    return i->fileName() < j->fileName(); //what ever you consider necessary... for one Version to be lessThan other
+}
 
 void SimulationManager::readHilillos()
 {
+    QList<QFile*> listFiles;
     QDirIterator directoryIterator(this->dir, QStringList());
     size_t fileID = 0;
+
     while (directoryIterator.hasNext())
     {
-        QFile file(directoryIterator.next());
-        if (QFileInfo(directoryIterator.filePath()).isFile())
-            if (QFileInfo(directoryIterator.filePath()).suffix() == "txt")
+        QFile* file = new QFile(directoryIterator.next());
+
+        if (QFileInfo(file->fileName()).isFile())
+        {
+            if (QFileInfo(file->fileName()).suffix() == "txt")
             {
                 qDebug() << "Hilillo: " << directoryIterator.filePath();
-                if (!file.open(QIODevice::ReadOnly))
+                listFiles.push_back(file);
+            }
+        }
+    }
+
+    std::sort(listFiles.begin(), listFiles.end(), VersionCompare);
+
+    while(!listFiles.empty())
+    {
+        QFile *fileName = listFiles.first();
+        listFiles.pop_front();
+
+        if (QFileInfo(fileName->fileName()).isFile())
+            if (QFileInfo(fileName->fileName()).suffix() == "txt")
+            {
+                qDebug() << "Hilillo: " << fileName->fileName();
+                if (!fileName->open(QIODevice::ReadOnly))
                 {
                     qDebug() << "Couldnt open " << directoryIterator.filePath();
                     return;
                 }
 
-                QTextStream in(&file);
+               // return;
+
+                QTextStream in(fileName);
                 while (!in.atEnd())
                 {
                     QString line = in.readLine();
@@ -137,6 +164,7 @@ void SimulationManager::readHilillos()
                 }
                 ++fileID;
             }
+
 
     }
 

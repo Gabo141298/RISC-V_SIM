@@ -146,22 +146,30 @@ void Processor::accessMemory(int instruction[4])
             // Hace un load normal
             registers[instruction[1]] = dataCache.getDataAt(this, registers[instruction[2]] + instruction[3]);
             // Le cambia el valor de rl a -1
-            this->rl = registers[instruction[2]];
+            this->rl = registers[instruction[2]] + instruction[3];
             break;
         case sc:
+
+            // Calcula la posicion de memoria
+            int mempos = registers[instruction[2]] + instruction[3];
+            qDebug() << "Sc o n mem pos " << mempos;
             // Verifica si el rl es igual a la direccion de memoria de adonde voy a guardar
-            if (this->rl == registers[2])
+            if (this->rl == mempos )
             {
+                qDebug() << "rl save";
+                dataCache.storeDataAt(this, registers[instruction[1]] + instruction[3], registers[instruction[2]]);
                 // Entonces guardo en memoria....
                 // El store en memoria tambien tiene que verificar si el RL del procesador
                 // afecta el proceso
             }else {
                 // Guardon un  0 en x2
+                registers[instruction[1]] = 0;
+                qDebug() << "Couldnt get the lock";
                 // y no escribe
             }
             break;
-        default:
-            break;
+      //  default:
+        //    break;
     }
     this->pc += 4;
     currentState = instructionFetch;
@@ -216,6 +224,15 @@ void Processor::processMessages(size_t* waitingAcks)
         }
         else if (currentMessage.opcode == invalidate)
         {
+            int rlBlock = this->rl/16;
+
+
+            if (rlBlock == currentMessage.blockToChangeState)
+            {
+                qDebug() << "Changing rl state" << "on processor" << this->processorId;
+                this->rl = -1;
+            }
+
             if(dataCache.state[blockInCache] == modified)
                 dataCache.copyBlockToMem(this, currentMessage.blockToChangeState, blockInCache, true, currentMessage.otherCacheBlock);
             dataCache.state[blockInCache] = invalid;

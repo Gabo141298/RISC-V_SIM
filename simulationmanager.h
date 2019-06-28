@@ -5,6 +5,8 @@
 #include <vector>
 #include <processor.h>
 
+class QFile;
+
 class SimulationManager
 {
 public:
@@ -22,6 +24,7 @@ private:
     void createProcessors();
     void distributeHilillos();
     void processorRun();
+
 };
 
 #endif // SIMULATIONMANAGER_H
