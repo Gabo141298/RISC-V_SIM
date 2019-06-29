@@ -143,16 +143,19 @@ void Processor::accessMemory(int instruction[4])
             dataCache.storeDataAt(this, registers[instruction[1]] + instruction[3], registers[instruction[2]]);
             break;
         case lr:
+          qDebug() <<"lr";
             // Hace un load normal
             registers[instruction[1]] = dataCache.getDataAt(this, registers[instruction[2]] + instruction[3]);
             // Le cambia el valor de rl a -1
+            qDebug() << this->rl;
             this->rl = registers[instruction[2]] + instruction[3];
+            qDebug() << this->rl;
             break;
         case sc:
 
             // Calcula la posicion de memoria
-            int mempos = registers[instruction[2]] + instruction[3];
-            qDebug() << "Sc o n mem pos " << mempos;
+            int mempos = registers[instruction[1]] + instruction[3];
+
             // Verifica si el rl es igual a la direccion de memoria de adonde voy a guardar
             if (this->rl == mempos )
             {
@@ -227,7 +230,7 @@ void Processor::processMessages(size_t* waitingAcks)
             int rlBlock = this->rl/16;
 
 
-            if (rlBlock == currentMessage.blockToChangeState)
+            if (rlBlock == currentMessage.blockToChangeState )
             {
                 qDebug() << "Changing rl state" << "on processor" << this->processorId;
                 this->rl = -1;
