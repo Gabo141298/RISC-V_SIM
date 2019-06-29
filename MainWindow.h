@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#define STEP
+
 #include <QMainWindow>
 #include "simulationmanager.h"
 
@@ -23,11 +25,16 @@ private slots:
 
     void on_selectHilillosButton_pressed();
 
+    void on_pushButton_pressed();
+
+public: signals:
+    void stepIN();
+
 private:
     Ui::MainWindow *ui;
     QString openFile();
     void centerAndResize();
-    SimulationManager simulationManager;
+    SimulationManager* simulationManager;
     QString dir;
     int quatum;
     void beginSimulation();

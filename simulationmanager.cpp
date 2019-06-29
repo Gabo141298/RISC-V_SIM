@@ -6,6 +6,8 @@
 #include <QtAlgorithms>
 #include <algorithm>
 
+
+
 SimulationManager::SimulationManager()
 {
 
@@ -18,6 +20,7 @@ SimulationManager::SimulationManager(const size_t quatum, const QString dir, con
 {
     this->hilillos.resize(10);
     this->processors.resize(numberOfProccesors);
+
 }
 
 void SimulationManager::beginSimulation()
@@ -96,15 +99,29 @@ void SimulationManager::distributeHilillos()
 
 void SimulationManager::processorRun()
 {
-    pthread_barrier_t* barrier = new pthread_barrier_t();
+    barrier = new pthread_barrier_t();
+
+    #ifdef STEP
     // Aca se puede hacer mas general, al igual que en varios lados, para que no sea un 3 s
-    pthread_barrier_init(barrier,nullptr, unsigned( numOfProcessor) );
+    pthread_barrier_init(barrier,nullptr, unsigned( numOfProcessor) + 1 );
+    #else
+    pthread_barrier_init(barrier,nullptr, unsigned( numOfProcessor));
+    #endif
     for (size_t index = 0; index < this->processors.size(); ++index)
     {
        this->processors.at(index)->processors = this->processors;
        this->processors.at(index)->init_barrier(barrier);
        this->processors.at(index)->start();
     }
+    // Aqui ya el boton se puede inicializar
+}
+
+void SimulationManager::incrementBarrier()
+{
+    #ifdef STEP
+    //qDebug() << "Wainting";
+    pthread_barrier_wait(this->barrier);
+    #endif
 }
 
 static bool VersionCompare(const QFile* i, const QFile* j)

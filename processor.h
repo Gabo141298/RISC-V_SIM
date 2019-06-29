@@ -6,7 +6,7 @@
 #include <QMutex>
 #include <vector>
 #include <QThread>
-
+#define STEP
 #include "cache.h"
 #include "instructioncache.h"
 #include "datacache.h"

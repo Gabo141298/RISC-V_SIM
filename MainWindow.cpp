@@ -19,6 +19,13 @@ MainWindow::MainWindow(QWidget *parent) :
     this->ui->quantumInput->setValidator(new QIntValidator(10,100,this));
     qDebug() << QCoreApplication::applicationDirPath() ;
     this->ui->selectedDirLabel->setText(QCoreApplication::applicationDirPath() );
+
+    this->ui->pushButton->setVisible(false);
+
+    #ifdef STEP
+    this->ui->pushButton->setVisible(true);
+    #endif
+
 }
 
 MainWindow::~MainWindow()
@@ -38,8 +45,11 @@ void MainWindow::on_runButtonPressed_pressed()
     }
     qDebug() << "Begining simulation";
     // Maybe this can be a new thread...
-    this->simulationManager = SimulationManager(this->quatum, this->dir,3);
-    simulationManager.beginSimulation();
+    this->simulationManager = new SimulationManager(size_t(this->quatum), this->dir,size_t(3));
+    //connect(this, &MainWindow::stepIN, &this->simulationManager., &SimulationManager::incrementBarrier);
+
+    connect(this, &MainWindow::stepIN, this->simulationManager, &SimulationManager::incrementBarrier);
+    simulationManager->beginSimulation();
 
 
 }
@@ -94,4 +104,9 @@ void MainWindow::centerAndResize() {
             QGuiApplication::primaryScreen()->geometry()
         )
     );
+}
+
+void MainWindow::on_pushButton_pressed()
+{
+    emit stepIN();
 }

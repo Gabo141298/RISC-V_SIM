@@ -1,6 +1,8 @@
 #include "processor.h"
 #include <QDebug>
 
+
+
 Processor::Processor(const size_t id, const size_t quatum):
     processorId{id},
     pc {0},
@@ -188,6 +190,11 @@ void Processor::advanceClockCycle()
 
     ++this->clock;
     pthread_barrier_wait(this->barrier);
+
+    #ifdef STEP
+    if (this->processorId == 0)
+        qDebug() << "Clock: " << clock;
+    #endif
 
     bool breakLoop = false;
 
