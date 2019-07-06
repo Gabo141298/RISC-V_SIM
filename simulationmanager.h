@@ -5,7 +5,7 @@
 #include <vector>
 #include <processor.h>
 #include <QObject>
-#define STEP
+#undef STEP
 
 class SimulationManager: public QObject
 {

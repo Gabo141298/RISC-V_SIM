@@ -31,6 +31,7 @@ void Processor::run()
         {
             case instructionFetch:
                 instructionsCache.fetch(this, instruction);
+                this->pc+=4;
                 if(isMemoryInstruction(instruction[0]))
                     currentState = dataFetch;
                 else
@@ -94,6 +95,8 @@ void Processor::execute(int instruction[])
     switch(instruction[0])
     {
         case addi:
+            if(instruction[1] == 16 && (registers[instruction[2]] + instruction[3] == 264))
+                qDebug() << "addi x16, x0, 264";
             execAddi(static_cast<unsigned>(instruction[1]), static_cast<unsigned>(instruction[2]), instruction[3]);
             break;
         case add:
@@ -121,6 +124,7 @@ void Processor::execute(int instruction[])
             execJalr(static_cast<unsigned>(instruction[1]), static_cast<unsigned>(instruction[2]), instruction[3]);
             break;
         case fin:
+            qDebug() << "fin in processor" << this->processorId << "and pc" << this->pc;
             currentState = contextSwitch;
             break;
         default:
@@ -128,7 +132,6 @@ void Processor::execute(int instruction[])
     }
     if(instruction[0] != fin)
     {
-        this->pc+=4;
         currentState = instructionFetch;
     }
 }
@@ -145,13 +148,13 @@ void Processor::accessMemory(int instruction[4])
             dataCache.storeDataAt(this, registers[instruction[1]] + instruction[3], registers[instruction[2]]);
             break;
         case lr:
-          qDebug() <<"lr";
+            //qDebug() <<"lr";
             // Hace un load normal
-            registers[instruction[1]] = dataCache.getDataAt(this, registers[instruction[2]] + instruction[3]);
+            registers[instruction[1]] = dataCache.getDataAt(this, registers[instruction[2]]);
             // Le cambia el valor de rl a -1
-            qDebug() << this->rl;
-            this->rl = registers[instruction[2]] + instruction[3];
-            qDebug() << this->rl;
+            //qDebug() << this->rl;
+            this->rl = registers[instruction[2]];// + instruction[3];
+            //qDebug() << this->rl;
             break;
         case sc:
 
@@ -161,22 +164,21 @@ void Processor::accessMemory(int instruction[4])
             // Verifica si el rl es igual a la direccion de memoria de adonde voy a guardar
             if (this->rl == mempos )
             {
-                qDebug() << "rl save";
+                //qDebug() << "rl save";
                 dataCache.storeDataAt(this, registers[instruction[1]] + instruction[3], registers[instruction[2]]);
                 // Entonces guardo en memoria....
                 // El store en memoria tambien tiene que verificar si el RL del procesador
                 // afecta el proceso
             }else {
-                // Guardon un  0 en x2
-                registers[instruction[1]] = 0;
-                qDebug() << "Couldnt get the lock";
+                // Guardo un  0 en x2
+                registers[instruction[2]] = 0;
+                //qDebug() << "Couldnt get the lock";
                 // y no escribe
             }
             break;
       //  default:
         //    break;
     }
-    this->pc += 4;
     currentState = instructionFetch;
 }
 
@@ -192,8 +194,8 @@ void Processor::advanceClockCycle()
     pthread_barrier_wait(this->barrier);
 
     #ifdef STEP
-    if (this->processorId == 0)
-        qDebug() << "Clock: " << clock;
+    //if (this->processorId == 0)
+        //qDebug() << "Clock: " << clock;
     #endif
 
     bool breakLoop = false;
@@ -235,11 +237,11 @@ void Processor::processMessages(size_t* waitingAcks)
         else if (currentMessage.opcode == invalidate)
         {
             int rlBlock = this->rl/16;
-
+            //qDebug() << "RL block value when invalidating processor " << this->processorId << ": " << rlBlock;
 
             if (rlBlock == currentMessage.blockToChangeState )
             {
-                qDebug() << "Changing rl state" << "on processor" << this->processorId;
+                //qDebug() << "Changing rl state" << "on processor" << this->processorId;
                 this->rl = -1;
             }
 
