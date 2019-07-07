@@ -22,6 +22,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->ui->pushButton->setVisible(false);
 
+    this->ui->lcdNumber->display(0);
+    this->ui->lcdNumber_2->display(1);
+    this->ui->lcdNumber_3->display(2);
+    this->lcd[0] = this->ui->lcdNumber;
+    this->lcd[1] = this->ui->lcdNumber_2;
+    this->lcd[2] = this->ui->lcdNumber_3;
+
+
     #ifdef STEP
     this->ui->pushButton->setVisible(true);
     #endif
@@ -33,6 +41,10 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::updateLeds(const int processor, const int hilillo)
+{
+   this->lcd[processor]->display(hilillo);
+}
 
 void MainWindow::on_runButtonPressed_pressed()
 {
@@ -48,16 +60,11 @@ void MainWindow::on_runButtonPressed_pressed()
     this->simulationManager = new SimulationManager(size_t(this->quatum), this->dir,size_t(3));
     //connect(this, &MainWindow::stepIN, &this->simulationManager., &SimulationManager::incrementBarrier);
 
+    connect(this->simulationManager, &SimulationManager::changeLeds, this, &MainWindow::updateLeds);
     connect(this, &MainWindow::stepIN, this->simulationManager, &SimulationManager::incrementBarrier);
     simulationManager->beginSimulation();
-
-
 }
 
-void MainWindow::beginSimulation()
-{
-
-}
 
 QString MainWindow::openFile()
 {

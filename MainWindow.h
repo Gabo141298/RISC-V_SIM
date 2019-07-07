@@ -3,6 +3,7 @@
 
 #define STEP
 
+#include <QLCDNumber>
 #include <QMainWindow>
 #include "simulationmanager.h"
 
@@ -27,6 +28,9 @@ private slots:
 
     void on_pushButton_pressed();
 
+public slots:
+    void updateLeds(const int processor, const int hilillo);
+
 public: signals:
     void stepIN();
 
@@ -36,8 +40,9 @@ private:
     void centerAndResize();
     SimulationManager* simulationManager;
     QString dir;
+    QLCDNumber* lcd[3];
     int quatum;
-    void beginSimulation();
+
 
 };
 

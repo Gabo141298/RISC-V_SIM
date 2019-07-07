@@ -44,10 +44,16 @@ void SimulationManager::createProcessors()
     {
         // Create processor threads and add to an array
         Processor *processorThread = this->processors.at(index) = new Processor(index, this->quatum);
-        (void)processorThread;
-        //connect(processorThread, &Processor::resultReady, this, &MyObject::handleResults);
-        //QObject::connect(processorThread, &Processor::finished, processorThread, &QObject::deleteLater);
+
+        connect(this->processors.at(index), &Processor::contextChange, this, &SimulationManager::contextSwitch);
+        QObject::connect(this->processors.at(index), &Processor::QThread::finished, this, &QObject::deleteLater);
+
     }
+}
+
+void SimulationManager::contextSwitch(const int processor, const int hilillo)
+{
+     emit changeLeds(processor, hilillo);
 }
 
 void SimulationManager::distributeHilillos()

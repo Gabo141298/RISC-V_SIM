@@ -81,6 +81,11 @@ private:
         jalr = 103,
         fin = 999,
     };
+public:
+
+signals:
+     void contextChange(const int processor, const int hilillo);
+
 protected:
     void run() override;
 private:

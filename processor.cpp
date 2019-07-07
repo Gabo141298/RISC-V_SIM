@@ -292,6 +292,8 @@ void Processor::makeContextSwitch(int instruction[])
         oldPcb->saveState(this->pc, oldPcb->finished, oldPcb->getID(),this->rl, this->registers);
         this->pcbRunningQueue.pop();
         this->pcbFinishedQueue.push(oldPcb);
+        emit contextChange(this->processorId, oldPcb->getID() );
+
 
         // Verificar si aún quedan
         this->currentQuatum = 0;
@@ -314,6 +316,8 @@ void Processor::makeContextSwitch(int instruction[])
         oldPcb->saveState(this->pc, oldPcb->wait, oldPcb->getID(),this->rl, this->registers);
         this->pcbRunningQueue.pop();
         this->pcbRunningQueue.push(oldPcb);
+        emit contextChange(this->processorId, oldPcb->getID() );
+
 
         Pcb* currentPcb = this->pcbRunningQueue.front();
         currentPcb->restore(this->pc, this->rl, this->registers);

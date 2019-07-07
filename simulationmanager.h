@@ -15,9 +15,9 @@ public:
     SimulationManager(size_t quatum, const QString dir,const size_t numberOfProccesors);
     void beginSimulation();
 signals:
-   // void changeLeds(const int processor, const int hilillo);
+    void changeLeds(const int processor, const int hilillo);
 public slots:
-   // void contextSwitch(const int processor,const int hilillo);
+    void contextSwitch(const int processor,const int hilillo);
 private:
     size_t quatum;
     QString dir;
