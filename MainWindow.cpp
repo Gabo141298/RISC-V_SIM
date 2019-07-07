@@ -29,7 +29,6 @@ MainWindow::MainWindow(QWidget *parent) :
     this->lcd[1] = this->ui->lcdNumber_2;
     this->lcd[2] = this->ui->lcdNumber_3;
 
-
     #ifdef STEP
     this->ui->pushButton->setVisible(true);
     #endif
@@ -78,10 +77,11 @@ void MainWindow::on_runButtonPressed_pressed()
         return;
     }
     qDebug() << "Begining simulation";
-    // Maybe this can be a new thread...
-    this->simulationManager = new SimulationManager(size_t(this->quatum), this->dir,size_t(3));
-    //connect(this, &MainWindow::stepIN, &this->simulationManager., &SimulationManager::incrementBarrier);
 
+    // Creates a new model controller
+    this->simulationManager = new SimulationManager(size_t(this->quatum), this->dir,size_t(3));
+
+    // Connects, the model with the UI
     connect(this->simulationManager, &SimulationManager::changeLeds, this, &MainWindow::updateLeds);
     connect(this->simulationManager, &SimulationManager::sendResultsToUI, this, &MainWindow::displayResults);
     connect(this, &MainWindow::stepIN, this->simulationManager, &SimulationManager::incrementBarrier);
@@ -91,6 +91,7 @@ void MainWindow::on_runButtonPressed_pressed()
 
 QString MainWindow::openFile()
 {
+  // Dialog that gets the path given from the user
   QString filename =
           QFileDialog::getExistingDirectory(this, tr("Open Directory"),
                                                        "/home",
@@ -107,6 +108,7 @@ QString MainWindow::openFile()
 
 void MainWindow::on_selectHilillosButton_pressed()
 {
+    // Gets the path from the user
     QString path;
     if ((path = openFile()) == nullptr )
        return;

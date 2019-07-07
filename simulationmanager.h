@@ -11,15 +11,29 @@ class SimulationManager: public QObject
 {
     Q_OBJECT
 public:
+    /// Default constructor
     SimulationManager();
-    SimulationManager(size_t quatum, const QString dir,const size_t numberOfProccesors);
-    void beginSimulation();
-signals:
-    void changeLeds(const int processor, const int hilillo);
 
+    /**
+     * @brief SimulationManager constructor
+     * @param quatum the quatum of the simulation
+     * @param dir the path of the hilillos
+     * @param numberOfProccesors number of processor we wanna launch
+     */
+    SimulationManager(size_t quatum, const QString dir,const size_t numberOfProccesors);
+
+    /// Begins the simulation, launch the 3 processor, and give them hilillos
+    void beginSimulation();
+
+signals:
+    /// Tells the UI to update the leds
+    void changeLeds(const int processor, const int hilillo);
+    /// Tells the UI that the results are ready
     void sendResultsToUI(const QString processorsData, const QString hilillosData);
 public slots:
+    /// Recollects the results from the processors
     void gatherResults(const QString processorsData, const QString hilillosData);
+    /// When a context switch occurs tell the main window to update the leds
     void contextSwitch(const int processor,const int hilillo);
 
 private:
