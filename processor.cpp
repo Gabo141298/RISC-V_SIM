@@ -60,31 +60,46 @@ void Processor::run()
         }
     }
 
-    while (!this->pcbFinishedQueue.empty())
-    {
-       qDebug() << this->processorId <<
-                   this->pcbFinishedQueue.front()->getID() <<
-                   this->pcbFinishedQueue.front()->pc <<
-                   this->pcbFinishedQueue.front()->rl <<
-                   this->pcbFinishedQueue.front()->state <<
-                   this->pcbFinishedQueue.front()->registers;
-       this->pcbFinishedQueue.pop();
-    }
-
     pthread_barrier_wait(barrier);
 
     if(processorId == 0)
     {
+        qDebug() << "Generating results....";
+        std::vector<int> completeDataMem(0);
+        std::vector<QString> dataCacheResults(0);
+        std::vector<QString> hilillos(0);
+
+
         for(size_t currentProcessor = 0; currentProcessor < processors.size(); ++currentProcessor)
         {
-            /*for(size_t currentPosition = 0; currentPosition < processors[currentProcessor]->dataMemory.size(); ++currentPosition)
-            {
-                qDebug() << currentProcessor * 32 + currentPosition << ": " << processors[currentProcessor]->dataMemory[currentPosition];
-            }*/
-            qDebug() << currentProcessor << " Memory: " << processors[currentProcessor]->dataMemory;
-            qDebug() << currentProcessor << " Cache: ";
-            processors[currentProcessor]->dataCache.toString();
+            completeDataMem.insert(completeDataMem.end(), processors[currentProcessor]->dataMemory.begin(), processors[currentProcessor]->dataMemory.end());
+            //qDebug() << currentProcessor << " Memory: " << processors[currentProcessor]->dataMemory;
+            //qDebug() << currentProcessor << " Cache: ";
+            dataCacheResults.push_back(processors[currentProcessor]->dataCache.toString());
         }
+
+        qDebug() << completeDataMem;
+
+        for (size_t index = 0; index < dataCacheResults.size(); ++index)
+        {
+            qDebug() << "Processor " << index;
+            qDebug() << dataCacheResults[index];
+        }
+
+        for(size_t currentProcessor = 0; currentProcessor < processors.size(); ++currentProcessor)
+        {
+            qDebug() << "Processor [" + QString::number(currentProcessor) ;
+            while (!processors[currentProcessor]->pcbFinishedQueue.empty())
+            {
+                   qDebug() << "Hilillo" << processors[currentProcessor]->pcbFinishedQueue.front()->getID()   << " Registers " <<
+                               processors[currentProcessor]->pcbFinishedQueue.front()->registers;
+                   // Ciclos que tardo su ejecucion
+                   // El valor del reloj cuando comenzo y termino
+
+                   processors[currentProcessor]->pcbFinishedQueue.pop();
+            }
+        }
+
     }
 }
 

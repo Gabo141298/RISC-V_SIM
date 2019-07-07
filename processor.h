@@ -82,7 +82,7 @@ private:
         fin = 999,
     };
 public:
-
+        std::queue<Pcb*> pcbFinishedQueue;
 signals:
      void contextChange(const int processor, const int hilillo);
 
@@ -111,7 +111,7 @@ private:
     DataCache dataCache;
     // Esto despues lo cambiamos por la lista enlazada circular con nodo centinela :V
     std::queue<Pcb*> pcbRunningQueue;
-    std::queue<Pcb*> pcbFinishedQueue;
+
 
     int rl;
     size_t currentQuatum;

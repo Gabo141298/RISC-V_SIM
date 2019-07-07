@@ -38,6 +38,8 @@ public:
 
     QString toString()
     {
+        QString all;
+
         QString block;
         for(size_t index = 0; index < 4; ++index)
         {
@@ -53,12 +55,16 @@ public:
                     block = "modified";
                     break;
             }
-            block += " " + QString::number(blockID[index]);
+            block += " Block[" + QString::number(blockID[index]) + "]";
             for(size_t blockIndex = 0; blockIndex < 4;  ++blockIndex)
                 block += " " + QString::number(cacheMem[index][blockIndex]);
-            qDebug() << block;
+
+            all += " ";
+            all.append(block);
+            all += " |";
+            //qDebug() << all;
         }
-        return block;
+        return all;
     }
 };
 
