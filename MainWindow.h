@@ -30,7 +30,7 @@ private slots:
 
 public slots:
     void updateLeds(const int processor, const int hilillo);
-
+    void displayResults(const QString processorsData, const QString hilillosData);
 public: signals:
     void stepIN();
 

@@ -85,6 +85,7 @@ public:
         std::queue<Pcb*> pcbFinishedQueue;
 signals:
      void contextChange(const int processor, const int hilillo);
+     void emitResults(const QString processorsData, const QString hilillosData);
 
 protected:
     void run() override;

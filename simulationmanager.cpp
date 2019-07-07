@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QtAlgorithms>
 #include <algorithm>
+#include <iostream>
 
 
 
@@ -29,7 +30,7 @@ void SimulationManager::beginSimulation()
     readHilillos();
     // Launch the threads
     createProcessors();
-    // Distribute program
+    // Distribute progrhilillosam
     distributeHilillos();
     // Start each processors
     processorRun();
@@ -44,16 +45,20 @@ void SimulationManager::createProcessors()
     {
         // Create processor threads and add to an array
         Processor *processorThread = this->processors.at(index) = new Processor(index, this->quatum);
-
         connect(this->processors.at(index), &Processor::contextChange, this, &SimulationManager::contextSwitch);
-        QObject::connect(this->processors.at(index), &Processor::QThread::finished, this, &QObject::deleteLater);
-
+       //- QObject::connect(this->processors.at(index), &Processor::QThread::finished, this, &QObject::deleteLater);
     }
+    connect(this->processors.at(0), &Processor::emitResults, this, &SimulationManager::gatherResults);
 }
 
 void SimulationManager::contextSwitch(const int processor, const int hilillo)
 {
-     emit changeLeds(processor, hilillo);
+    emit changeLeds(processor, hilillo);
+}
+
+void SimulationManager::gatherResults(const QString processorsData, const QString hilillosData)
+{
+    emit sendResultsToUI(processorsData, hilillosData);
 }
 
 void SimulationManager::distributeHilillos()

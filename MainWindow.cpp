@@ -43,7 +43,29 @@ MainWindow::~MainWindow()
 
 void MainWindow::updateLeds(const int processor, const int hilillo)
 {
-   this->lcd[processor]->display(hilillo);
+    this->lcd[processor]->display(hilillo);
+}
+
+void MainWindow::displayResults(const QString processorsData, const QString hilillosData)
+{
+   QWidget* temp = new QWidget();
+   QLabel* label = new QLabel(temp);
+   QLabel* label2 = new QLabel(temp);
+
+   QVBoxLayout *layout = new QVBoxLayout(temp);
+
+   label->setWordWrap(true);
+   label->setText(processorsData);
+
+   layout->addWidget(label);
+
+   label2->setWordWrap(true);
+   label2->setText(hilillosData);
+   layout->addWidget(label2);
+
+   temp->setWindowModality(Qt::ApplicationModal);
+   temp->show();
+
 }
 
 void MainWindow::on_runButtonPressed_pressed()
@@ -61,6 +83,7 @@ void MainWindow::on_runButtonPressed_pressed()
     //connect(this, &MainWindow::stepIN, &this->simulationManager., &SimulationManager::incrementBarrier);
 
     connect(this->simulationManager, &SimulationManager::changeLeds, this, &MainWindow::updateLeds);
+    connect(this->simulationManager, &SimulationManager::sendResultsToUI, this, &MainWindow::displayResults);
     connect(this, &MainWindow::stepIN, this->simulationManager, &SimulationManager::incrementBarrier);
     simulationManager->beginSimulation();
 }

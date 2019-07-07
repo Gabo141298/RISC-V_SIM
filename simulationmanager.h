@@ -16,8 +16,12 @@ public:
     void beginSimulation();
 signals:
     void changeLeds(const int processor, const int hilillo);
+
+    void sendResultsToUI(const QString processorsData, const QString hilillosData);
 public slots:
+    void gatherResults(const QString processorsData, const QString hilillosData);
     void contextSwitch(const int processor,const int hilillo);
+
 private:
     size_t quatum;
     QString dir;

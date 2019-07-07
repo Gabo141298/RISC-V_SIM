@@ -69,6 +69,8 @@ void Processor::run()
         std::vector<QString> dataCacheResults(0);
         std::vector<QString> hilillos(0);
 
+        QString processorsData = "Mem: ";
+        QString hilillosData = "";
 
         for(size_t currentProcessor = 0; currentProcessor < processors.size(); ++currentProcessor)
         {
@@ -78,27 +80,48 @@ void Processor::run()
             dataCacheResults.push_back(processors[currentProcessor]->dataCache.toString());
         }
 
+        for (size_t index = 0; index < completeDataMem.size(); ++index)
+        {
+            processorsData += "M["+ QString::number(index) + "]:"+ QString::number(completeDataMem[index]) + " ";
+        }
+        processorsData += "\n\n";
+
         qDebug() << completeDataMem;
 
         for (size_t index = 0; index < dataCacheResults.size(); ++index)
         {
-            qDebug() << "Processor " << index;
-            qDebug() << dataCacheResults[index];
+            //qDebug() << "Processor " << index;
+            processorsData += "Processor " + QString::number(index) + ": \n";
+            processorsData += dataCacheResults[index] + "\n";
         }
 
         for(size_t currentProcessor = 0; currentProcessor < processors.size(); ++currentProcessor)
         {
-            qDebug() << "Processor [" + QString::number(currentProcessor) ;
+            qDebug() << "Processor [" + QString::number(currentProcessor) + "]" ;
+            hilillosData += "Processor [" + QString::number(currentProcessor) + "]:\n";
+
             while (!processors[currentProcessor]->pcbFinishedQueue.empty())
             {
-                   qDebug() << "Hilillo" << processors[currentProcessor]->pcbFinishedQueue.front()->getID()   << " Registers " <<
+                   qDebug() << "\tHilillo" << processors[currentProcessor]->pcbFinishedQueue.front()->getID()   << " Registers " <<
                                processors[currentProcessor]->pcbFinishedQueue.front()->registers;
+                   hilillosData += QString("\tHilillo") +
+                   QString::number(processors[currentProcessor]->pcbFinishedQueue.front()->getID() )  + ": ";
+
+                   for(size_t index = 0; index < processors[currentProcessor]->pcbFinishedQueue.front()->registers.size(); ++index)
+                   {
+                       hilillosData += "X" + QString::number(index)+ ":" +
+                               QString::number(processors[currentProcessor]->pcbFinishedQueue.front()->registers.at(index)) + "| ";
+                   }
+
+                   hilillosData += '\n';
                    // Ciclos que tardo su ejecucion
                    // El valor del reloj cuando comenzo y termino
-
                    processors[currentProcessor]->pcbFinishedQueue.pop();
             }
         }
+
+        qDebug() << "Emiting signal";
+        emit emitResults(processorsData, hilillosData);
 
     }
 }
