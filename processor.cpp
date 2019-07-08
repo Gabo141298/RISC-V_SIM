@@ -5,7 +5,7 @@
 
 Processor::Processor(const size_t id, const size_t quatum):
     processorId{id},
-    pc {0},
+    pc {128},
     loopCondition{true},
     registers{std::vector<int>(32, 0)},
     instructionMemory{std::vector<int>(64 * 4, 0)}, // Cada instrucción está compuesta por cuatro enteros para efectos de la simulación
