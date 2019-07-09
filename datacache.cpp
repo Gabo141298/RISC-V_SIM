@@ -19,7 +19,7 @@ int DataCache::getDataAt(Processor* processor, int dataPosition)
     return cacheMem[blockInCache][wordInBlock];
 }
 
-void DataCache::storeDataAt(Processor *processor, int dataPosition, int word)
+bool DataCache::storeDataAt(Processor *processor, int dataPosition, int word, bool isSc)
 {
     int blockInMemory = dataPosition / 16;
     int blockInCache = blockInMemory % 4;
@@ -29,7 +29,12 @@ void DataCache::storeDataAt(Processor *processor, int dataPosition, int word)
 
     if(!( isWordInCache(blockInMemory, blockInCache) && (state[blockInCache] == modified) ) )
         solveFail(processor, blockInMemory, blockInCache, store);
-    cacheMem[blockInCache][wordInBlock] = word;
+    if(!isSc || (isSc && dataPosition == processor->rl))
+        cacheMem[blockInCache][wordInBlock] = word;
+    else
+        return false;
+
+    return true;
 }
 
 void DataCache::solveFail(Processor* processor, const int &blockInMemory, const int &victimBlock, MemoryOperation operation)

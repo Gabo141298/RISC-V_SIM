@@ -25,7 +25,7 @@ public:
 
     DataCache();
     int getDataAt(Processor* processor, int dataPosition);
-    void storeDataAt(Processor* processor, int dataPosition, int word);
+    bool storeDataAt(Processor* processor, int dataPosition, int word, bool isSc = false);
     void solveFail(Processor* processor, const int &blockInMemory, const int &victimBlock, MemoryOperation operation);
     void copyBlockToMem(Processor* processor, const int &blockInMemory, const int &modifiedBlock, bool copyToAnotherCache = false, int* otherCacheBlock = nullptr);
     void copyBlockFromMem(Processor *processor, const int &blockInMemory, const int &blockInCache);

@@ -82,7 +82,7 @@ void Processor::run()
 
         for (size_t index = 0; index < completeDataMem.size(); ++index)
         {
-            processorsData += "M["+ QString::number(index) + "]:"+ QString::number(completeDataMem[index]) + " ";
+            processorsData += "M["+ QString::number(index * 4) + "]:"+ QString::number(completeDataMem[index]) + " ";
         }
         processorsData += "\n\n";
 
@@ -133,8 +133,6 @@ void Processor::execute(int instruction[])
     switch(instruction[0])
     {
         case addi:
-            if(instruction[1] == 16 && (registers[instruction[2]] + instruction[3] == 264))
-                qDebug() << "addi x16, x0, 264";
             execAddi(static_cast<unsigned>(instruction[1]), static_cast<unsigned>(instruction[2]), instruction[3]);
             break;
         case add:
@@ -200,19 +198,15 @@ void Processor::accessMemory(int instruction[4])
             int mempos = registers[instruction[1]] + instruction[3];
 
             // Verifica si el rl es igual a la direccion de memoria de adonde voy a guardar
-            if (this->rl == mempos )
+            if (this->rl != mempos || !dataCache.storeDataAt(this, registers[instruction[1]] + instruction[3], registers[instruction[2]], true))
             {
-                //qDebug() << "rl save";
-                dataCache.storeDataAt(this, registers[instruction[1]] + instruction[3], registers[instruction[2]]);
-                // Entonces guardo en memoria....
-                // El store en memoria tambien tiene que verificar si el RL del procesador
-                // afecta el proceso
-            }else {
                 // Guardo un  0 en x2
                 registers[instruction[2]] = 0;
                 //qDebug() << "Couldnt get the lock";
                 // y no escribe
             }
+            else
+                qDebug() << "sadsd";
             break;
       //  default:
         //    break;
