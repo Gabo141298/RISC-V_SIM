@@ -209,7 +209,8 @@ void Processor::makeResults()
                        hilillosData += "X" + QString::number(index)+ ":" +
                                QString::number(processors[currentProcessor]->pcbFinishedQueue.front()->registers.at(index)) + "| ";
                    }
-
+                   hilillosData += " cycles:  " + QString::number(processors[currentProcessor]->pcbFinishedQueue.front()->totalCycles
+                                                                  ) + " ";
                    hilillosData += '\n';
                    // Ciclos que tardo su ejecucion
                    // El valor del reloj cuando comenzo y termino
@@ -231,6 +232,8 @@ void Processor::advanceClockCycle()
         currentQuatum = 0;
     }
 
+    if( !this->pcbRunningQueue.empty() )
+        this->pcbRunningQueue.front()->totalCycles++;
     ++this->clock;
     pthread_barrier_wait(this->barrier);
 

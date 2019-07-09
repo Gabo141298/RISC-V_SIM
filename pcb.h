@@ -25,6 +25,7 @@ public:
     std::vector<int> registers;
     int rl;
     int id;
+    int totalCycles;
     int firstCycle;
     int lastCycle;
     PcbStates state;

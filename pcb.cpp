@@ -14,6 +14,7 @@ Pcb::Pcb(int pc, int id):
     pc{pc},
     rl{-1},
     id{id},
+    totalCycles{0},
     firstCycle{-1},
     state{ready}
 {
