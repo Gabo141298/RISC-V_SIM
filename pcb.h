@@ -40,7 +40,8 @@ public:
     inline int getID(){return this->id;}
     // ID, pc, registros, estado. (no se para que el estado)
     /**
-     * @brief saveState saves the state of a pcb given the paramaters
+     * @brief saveState saves the state of a pcb given the paramaters, when a context
+     * switch occurs or when a program ends its execution
      * @param pc
      * @param state
      * @param id

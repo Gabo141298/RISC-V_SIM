@@ -342,6 +342,11 @@ void Processor::makeContextSwitch(int instruction[])
         if (!this->pcbRunningQueue.empty())
         {
             Pcb* current = this->pcbRunningQueue.front();
+            if (current->firstCycle == -1)
+            {
+                current->setBegginingClock(this->clock);
+            }
+
             current->restore(this->pc,this->rl,this->registers);
             this->currentState = instructionFetch;
         }
@@ -354,13 +359,6 @@ void Processor::makeContextSwitch(int instruction[])
     else
     {
         Pcb* oldPcb = this->pcbRunningQueue.front();
-
-//        qDebug()<<  "Changing context from " <<  oldPcb->getID() << "with cycle" ;
-        if (oldPcb->firstCycle == -1)
-        {
-            oldPcb->setBegginingClock(this->clock);
-        }
-
         oldPcb->saveState(this->pc, oldPcb->wait, oldPcb->getID(),this->rl, this->registers, this->clock);
         this->pcbRunningQueue.pop();
         this->pcbRunningQueue.push(oldPcb);
@@ -368,6 +366,12 @@ void Processor::makeContextSwitch(int instruction[])
 
 
         Pcb* currentPcb = this->pcbRunningQueue.front();
+
+        if (currentPcb->firstCycle == -1)
+        {
+            currentPcb->setBegginingClock(this->clock);
+        }
+
         currentPcb->restore(this->pc, this->rl, this->registers);
         this->currentState = instructionFetch;
     }
