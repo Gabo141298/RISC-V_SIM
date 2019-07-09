@@ -138,6 +138,8 @@ public:
 
     void accessMemory(int instruction[4]);
 
+    void makeResults();
+
     void advanceClockCycle();
     void processMessages(size_t* waitingAcks = nullptr);
 

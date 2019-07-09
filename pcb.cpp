@@ -14,16 +14,18 @@ Pcb::Pcb(int pc, int id):
     pc{pc},
     rl{-1},
     id{id},
+    firstCycle{-1},
     state{ready}
 {
     this->registers.resize(32);
 }
 
-void Pcb::saveState(const int pc, PcbStates state, int id, int rl,  std::vector<int>& registers)
+void Pcb::saveState(const int pc, PcbStates state, int id, int rl,  std::vector<int>& registers, int lastCycle)
 {
     this->pc = pc;
     this->state = state;
     this->id = id;
+    this->lastCycle = lastCycle;
 
     size_t index = 0;
     for (std::vector<int>::iterator begin = registers.begin(); begin != registers.end(); ++begin )

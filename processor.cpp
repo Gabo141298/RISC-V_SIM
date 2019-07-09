@@ -62,68 +62,7 @@ void Processor::run()
 
     pthread_barrier_wait(barrier);
 
-    if(processorId == 0)
-    {
-        qDebug() << "Generating results....";
-        std::vector<int> completeDataMem(0);
-        std::vector<QString> dataCacheResults(0);
-        std::vector<QString> hilillos(0);
-
-        QString processorsData = "Mem: ";
-        QString hilillosData = "";
-
-        for(size_t currentProcessor = 0; currentProcessor < processors.size(); ++currentProcessor)
-        {
-            completeDataMem.insert(completeDataMem.end(), processors[currentProcessor]->dataMemory.begin(), processors[currentProcessor]->dataMemory.end());
-            //qDebug() << currentProcessor << " Memory: " << processors[currentProcessor]->dataMemory;
-            //qDebug() << currentProcessor << " Cache: ";
-            dataCacheResults.push_back(processors[currentProcessor]->dataCache.toString());
-        }
-
-        for (size_t index = 0; index < completeDataMem.size(); ++index)
-        {
-            processorsData += "M["+ QString::number(index * 4) + "]:"+ QString::number(completeDataMem[index]) + " ";
-        }
-        processorsData += "\n\n";
-
-        qDebug() << completeDataMem;
-
-        for (size_t index = 0; index < dataCacheResults.size(); ++index)
-        {
-            //qDebug() << "Processor " << index;
-            processorsData += "Processor " + QString::number(index) + ": \n";
-            processorsData += dataCacheResults[index] + "\n";
-        }
-
-        for(size_t currentProcessor = 0; currentProcessor < processors.size(); ++currentProcessor)
-        {
-            qDebug() << "Processor [" + QString::number(currentProcessor) + "]" ;
-            hilillosData += "Processor [" + QString::number(currentProcessor) + "]:\n";
-
-            while (!processors[currentProcessor]->pcbFinishedQueue.empty())
-            {
-                   qDebug() << "\tHilillo" << processors[currentProcessor]->pcbFinishedQueue.front()->getID()   << " Registers " <<
-                               processors[currentProcessor]->pcbFinishedQueue.front()->registers;
-                   hilillosData += QString("\tHilillo") +
-                   QString::number(processors[currentProcessor]->pcbFinishedQueue.front()->getID() )  + ": ";
-
-                   for(size_t index = 0; index < processors[currentProcessor]->pcbFinishedQueue.front()->registers.size(); ++index)
-                   {
-                       hilillosData += "X" + QString::number(index)+ ":" +
-                               QString::number(processors[currentProcessor]->pcbFinishedQueue.front()->registers.at(index)) + "| ";
-                   }
-
-                   hilillosData += '\n';
-                   // Ciclos que tardo su ejecucion
-                   // El valor del reloj cuando comenzo y termino
-                   processors[currentProcessor]->pcbFinishedQueue.pop();
-            }
-        }
-
-        qDebug() << "Emiting signal";
-        emit emitResults(processorsData, hilillosData);
-
-    }
+    makeResults();
 }
 
 
@@ -212,6 +151,76 @@ void Processor::accessMemory(int instruction[4])
         //    break;
     }
     currentState = instructionFetch;
+}
+
+void Processor::makeResults()
+{
+    if(processorId == 0)
+    {
+        qDebug() << "Generating results....";
+        std::vector<int> completeDataMem(0);
+        std::vector<QString> dataCacheResults(0);
+        std::vector<QString> hilillos(0);
+
+        QString processorsData = "Mem: ";
+        QString hilillosData = "";
+
+        for(size_t currentProcessor = 0; currentProcessor < processors.size(); ++currentProcessor)
+        {
+            completeDataMem.insert(completeDataMem.end(), processors[currentProcessor]->dataMemory.begin(), processors[currentProcessor]->dataMemory.end());
+            //qDebug() << currentProcessor << " Memory: " << processors[currentProcessor]->dataMemory;
+            //qDebug() << currentProcessor << " Cache: ";
+            dataCacheResults.push_back(processors[currentProcessor]->dataCache.toString());
+        }
+
+        for (size_t index = 0; index < completeDataMem.size(); ++index)
+        {
+            processorsData += "M["+ QString::number(index * 4) + "]:"+ QString::number(completeDataMem[index]) + " ";
+        }
+        processorsData += "\n\n";
+
+        qDebug() << completeDataMem;
+
+        for (size_t index = 0; index < dataCacheResults.size(); ++index)
+        {
+            //qDebug() << "Processor " << index;
+            processorsData += "Processor " + QString::number(index) + ": \n";
+            processorsData += dataCacheResults[index] + "\n";
+        }
+
+        for(size_t currentProcessor = 0; currentProcessor < processors.size(); ++currentProcessor)
+        {
+            qDebug() << "Processor [" + QString::number(currentProcessor) + "]" ;
+            hilillosData += "Processor [" + QString::number(currentProcessor) + "]:\n";
+
+            while (!processors[currentProcessor]->pcbFinishedQueue.empty())
+            {
+                   qDebug() << "\tHilillo" << processors[currentProcessor]->pcbFinishedQueue.front()->getID()   << " Registers " <<
+                               processors[currentProcessor]->pcbFinishedQueue.front()->registers;
+                   hilillosData += QString("\tHilillo ") +
+                   QString::number(processors[currentProcessor]->pcbFinishedQueue.front()->getID() ) + " ( Start cycle: " +
+
+                            QString::number(processors[currentProcessor]->pcbFinishedQueue.front()->firstCycle) +
+                           " End cycle: " + QString::number(processors[currentProcessor]->pcbFinishedQueue.front()->lastCycle)
+                           + ") Registers: ";
+
+                   for(size_t index = 0; index < processors[currentProcessor]->pcbFinishedQueue.front()->registers.size(); ++index)
+                   {
+                       hilillosData += "X" + QString::number(index)+ ":" +
+                               QString::number(processors[currentProcessor]->pcbFinishedQueue.front()->registers.at(index)) + "| ";
+                   }
+
+                   hilillosData += '\n';
+                   // Ciclos que tardo su ejecucion
+                   // El valor del reloj cuando comenzo y termino
+                   processors[currentProcessor]->pcbFinishedQueue.pop();
+            }
+        }
+
+        qDebug() << "Emiting signal";
+        emit emitResults(processorsData, hilillosData);
+
+    }
 }
 
 void Processor::advanceClockCycle()
@@ -321,7 +330,7 @@ void Processor::makeContextSwitch(int instruction[])
     if (instruction[0] == 999)
     {
         Pcb* oldPcb = this->pcbRunningQueue.front();
-        oldPcb->saveState(this->pc, oldPcb->finished, oldPcb->getID(),this->rl, this->registers);
+        oldPcb->saveState(this->pc, oldPcb->finished, oldPcb->getID(),this->rl, this->registers, this->clock);
         this->pcbRunningQueue.pop();
         this->pcbFinishedQueue.push(oldPcb);
         emit contextChange(this->processorId, oldPcb->getID() );
@@ -345,7 +354,14 @@ void Processor::makeContextSwitch(int instruction[])
     else
     {
         Pcb* oldPcb = this->pcbRunningQueue.front();
-        oldPcb->saveState(this->pc, oldPcb->wait, oldPcb->getID(),this->rl, this->registers);
+
+//        qDebug()<<  "Changing context from " <<  oldPcb->getID() << "with cycle" ;
+//        if (oldPcb->firstCycle == -1)
+//        {
+//            oldPcb->setBegginingClock(this->clock);
+//        }
+
+        oldPcb->saveState(this->pc, oldPcb->wait, oldPcb->getID(),this->rl, this->registers, this->clock);
         this->pcbRunningQueue.pop();
         this->pcbRunningQueue.push(oldPcb);
         emit contextChange(this->processorId, oldPcb->getID() );
