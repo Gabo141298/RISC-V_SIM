@@ -11,6 +11,8 @@ InstructionCache::InstructionCache()
 
 void InstructionCache::fetch(Processor *processor, int instruction[4])
 {
+    /* La memoria de instrucciones, en teoría, se encuentra a partir de la palabra 128,
+    pero la memoria de instrucciones está en una estructura aparte de la de datos. */
     int blockInMemory = (processor->pc - 128) / 16;
     int blockInCache = blockInMemory % 4;
     int wordInBlock = ((processor->pc - 128) / 4) % 4;
