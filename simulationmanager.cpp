@@ -89,6 +89,8 @@ void SimulationManager::distributeHilillos()
         {
             // Creates a temporal pcb, with the initial needed data
             Pcb* temp = new Pcb(counter[pos%3] + 128, id);
+            if (counter[pos%3] == 0)
+                temp->setBegginingClock(0);
             this->processors.at(pos%3)->pushPcb(temp);
 
             qDebug() << "Init PCB" << "with hilillo" << id << "Beginning at mem pos" << counter[pos%3] << "to proccesor" << pos%3;

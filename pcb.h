@@ -25,6 +25,8 @@ public:
     std::vector<int> registers;
     int rl;
     int id;
+    int firstCycle;
+    int lastCycle;
     PcbStates state;
 
     /// Default constructor
@@ -45,8 +47,9 @@ public:
      * @param rl
      * @param registers
      */
-    void saveState(const int pc, PcbStates state, int id, int rl,  std::vector<int>& registers);
+    void saveState(const int pc, PcbStates state, int id, int rl,  std::vector<int>& registers, int lastCycle);
 
+    inline void setBegginingClock(int clock) { this->firstCycle = clock;}
     /**
      * @brief restore restores the state of a PCB
      * @param pc
