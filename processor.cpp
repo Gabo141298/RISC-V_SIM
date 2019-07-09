@@ -356,10 +356,10 @@ void Processor::makeContextSwitch(int instruction[])
         Pcb* oldPcb = this->pcbRunningQueue.front();
 
 //        qDebug()<<  "Changing context from " <<  oldPcb->getID() << "with cycle" ;
-//        if (oldPcb->firstCycle == -1)
-//        {
-//            oldPcb->setBegginingClock(this->clock);
-//        }
+        if (oldPcb->firstCycle == -1)
+        {
+            oldPcb->setBegginingClock(this->clock);
+        }
 
         oldPcb->saveState(this->pc, oldPcb->wait, oldPcb->getID(),this->rl, this->registers, this->clock);
         this->pcbRunningQueue.pop();
